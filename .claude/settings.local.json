@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(git init:*)",
+      "Bash(npx create-expo-app@latest . --template blank --yes)",
+      "Bash(cat:*)",
+      "Bash(npm install:*)",
+      "Bash(gh auth status:*)",
+      "Bash(git --version:*)",
+      "Bash(where:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
