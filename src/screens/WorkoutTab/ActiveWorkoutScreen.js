@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal, Image, ActivityIndicator } from 'react-native';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal, Image, ActivityIndicator, Animated } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useWorkout } from '../../context/WorkoutContext';
 import { useExercises } from '../../context/ExerciseContext';
 import { useSettings } from '../../context/SettingsContext';
 import { spacing, fontSize, borderRadius } from '../../theme';
+import WeightRoller from '../../components/common/WeightRoller';
 
 // Demo exercises for quick start without routine
 const DEMO_EXERCISES = [
@@ -58,6 +59,44 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
     );
     return prevEx?.sets || null;
   };
+
+  // Check if user is ready for progression (hit high end of rep range - 12+ reps consistently)
+  const checkProgressionReady = (exerciseId, exerciseName) => {
+    const prevSets = getPreviousValues(exerciseId, exerciseName);
+    if (!prevSets || prevSets.length === 0) return false;
+    // Ready to level up if at least 2/3 of sets hit 12+ reps
+    const highRepSets = prevSets.filter(s => s.reps >= 12).length;
+    return highRepSets >= Math.ceil(prevSets.length * 0.66);
+  };
+
+  // Throbbing animation for progression nudge
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const isReady = checkProgressionReady(currentExercise.exerciseId, currentExercise.name);
+    if (isReady) {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.05,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      pulse.start();
+      return () => pulse.stop();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [currentExerciseIndex]);
+
+  const isProgressionReady = checkProgressionReady(currentExercise.exerciseId, currentExercise.name);
 
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [workoutData, setWorkoutData] = useState(
@@ -191,22 +230,39 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
       </View>
 
       <ScrollView style={styles.setsContainer}>
+        {isProgressionReady && (
+          <Animated.View
+            style={[
+              styles.progressionHint,
+              { backgroundColor: colors.primary + '20', transform: [{ scale: pulseAnim }] }
+            ]}
+          >
+            <Text style={[styles.progressionHintText, { color: colors.primary }]}>
+              Ready to level up? Try adding weight!
+            </Text>
+          </Animated.View>
+        )}
         {currentExercise.sets.map((set, index) => {
           const prevSet = previousValues?.[index];
+          const shouldPulse = isProgressionReady && index === 0 && !set.weight;
           return (
-            <View key={index} style={[styles.setRow, { backgroundColor: colors.card }]}>
+            <Animated.View
+              key={index}
+              style={[
+                styles.setRow,
+                { backgroundColor: colors.card },
+                shouldPulse && { transform: [{ scale: pulseAnim }] }
+              ]}
+            >
               <Text style={[styles.setLabel, { color: colors.textSecondary }]}>
                 Set {index + 1}
               </Text>
               <View style={styles.inputGroup}>
                 <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
-                    placeholder={prevSet?.weight ? `${displayWeight(prevSet.weight)}` : units}
-                    placeholderTextColor={colors.placeholder}
-                    keyboardType="numeric"
+                  <WeightRoller
                     value={set.weight}
-                    onChangeText={(value) => updateSet(index, 'weight', value)}
+                    onChange={(value) => updateSet(index, 'weight', value)}
+                    placeholder={prevSet?.weight ? `${displayWeight(prevSet.weight)}` : null}
                   />
                   {prevSet?.weight && !set.weight && (
                     <Text style={[styles.prevHint, { color: colors.textSecondary }]}>prev</Text>
@@ -227,7 +283,7 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
                   )}
                 </View>
               </View>
-            </View>
+            </Animated.View>
           );
         })}
       </ScrollView>
@@ -365,6 +421,16 @@ const styles = StyleSheet.create({
   },
   setsContainer: {
     flex: 1,
+  },
+  progressionHint: {
+    padding: spacing.sm,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.md,
+    alignItems: 'center',
+  },
+  progressionHintText: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
   },
   setRow: {
     flexDirection: 'row',

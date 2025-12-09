@@ -10,6 +10,43 @@ import Button from '../../components/common/Button';
 
 const GYM_PROMPT_DISMISSED_KEY = '@gym_setup_prompt_dismissed';
 
+// Determine the next scheduled day based on workout history
+const getNextScheduledDay = (routine, workoutHistory) => {
+  if (!routine || !routine.days || routine.days.length === 0) return null;
+
+  // Find the last completed session for this routine
+  const routineSessions = workoutHistory
+    .filter(s => s.routineId === routine.id)
+    .sort((a, b) => b.date - a.date);
+
+  if (routineSessions.length === 0) {
+    // Never done this routine, start with day 1
+    return { day: routine.days[0], index: 0, isScheduled: true };
+  }
+
+  const lastSession = routineSessions[0];
+  const lastDayIndex = routine.days.findIndex(d => d.id === lastSession.dayId);
+
+  // Next day is the one after the last completed
+  const nextIndex = (lastDayIndex + 1) % routine.days.length;
+  return {
+    day: routine.days[nextIndex],
+    index: nextIndex,
+    isScheduled: true,
+    lastCompletedIndex: lastDayIndex,
+  };
+};
+
+// Check if user might be behind schedule (last workout > 3 days ago)
+const isBehindSchedule = (routine, workoutHistory) => {
+  const routineSessions = workoutHistory.filter(s => s.routineId === routine?.id);
+  if (routineSessions.length === 0) return false;
+
+  const lastSession = routineSessions.sort((a, b) => b.date - a.date)[0];
+  const daysSinceLastWorkout = (Date.now() - lastSession.date) / (1000 * 60 * 60 * 24);
+  return daysSinceLastWorkout > 3;
+};
+
 const calculateWeeklyVolume = (history) => {
   const now = Date.now();
   const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
@@ -69,6 +106,10 @@ export default function HomeScreen({ navigation }) {
   const weeklyVolume = useMemo(() => calculateWeeklyVolume(workoutHistory), [workoutHistory]);
   const workoutsThisWeek = useMemo(() => getRecentWorkouts(workoutHistory, 7), [workoutHistory]);
   const pbCount = useMemo(() => Object.keys(personalBests).length, [personalBests]);
+
+  // Next scheduled day tracking
+  const nextScheduled = useMemo(() => getNextScheduledDay(currentRoutine, workoutHistory), [currentRoutine, workoutHistory]);
+  const behindSchedule = useMemo(() => isBehindSchedule(currentRoutine, workoutHistory), [currentRoutine, workoutHistory]);
 
   // Get volume history for mini chart (last 4 weeks)
   const volumeHistory = useMemo(() => {
@@ -165,8 +206,25 @@ export default function HomeScreen({ navigation }) {
           <Text style={[styles.routineName, { color: colors.text }]}>
             {currentRoutine.name}
           </Text>
+          {nextScheduled && (
+            <View style={styles.nextDayContainer}>
+              <Text style={[styles.nextDayLabel, { color: colors.textSecondary }]}>
+                Next up:
+              </Text>
+              <Text style={[styles.nextDayName, { color: colors.primary }]}>
+                {nextScheduled.day.name}
+              </Text>
+            </View>
+          )}
+          {behindSchedule && (
+            <View style={[styles.behindBadge, { backgroundColor: colors.primary + '20' }]}>
+              <Text style={[styles.behindBadgeText, { color: colors.primary }]}>
+                Behind schedule? Tap "Start" to pick any day
+              </Text>
+            </View>
+          )}
           <Text style={[styles.routineDays, { color: colors.textSecondary }]}>
-            {currentRoutine.days?.length || 0} days • Tap to change
+            {currentRoutine.days?.length || 0} days • Tap to change routine
           </Text>
         </TouchableOpacity>
       ) : routines.length > 0 ? (
@@ -311,21 +369,53 @@ export default function HomeScreen({ navigation }) {
             <Text style={[styles.modalTitle, { color: colors.text }]}>
               {currentRoutine?.name || 'Select Day'}
             </Text>
+            {nextScheduled && (
+              <TouchableOpacity
+                style={[styles.scheduledDayButton, { backgroundColor: colors.primary }]}
+                onPress={() => handleSelectDay(currentRoutine, nextScheduled.day)}
+              >
+                <Text style={styles.scheduledDayButtonText}>
+                  Start Scheduled: {nextScheduled.day.name}
+                </Text>
+              </TouchableOpacity>
+            )}
+            {behindSchedule && (
+              <Text style={[styles.skipHint, { color: colors.textSecondary }]}>
+                Or skip ahead to a different day:
+              </Text>
+            )}
             <ScrollView style={styles.modalList}>
-              {currentRoutine?.days?.map(day => (
-                <TouchableOpacity
-                  key={day.id}
-                  style={[styles.modalItem, { borderBottomColor: colors.border }]}
-                  onPress={() => handleSelectDay(currentRoutine, day)}
-                >
-                  <Text style={[styles.modalItemText, { color: colors.text }]}>
-                    {day.name}
-                  </Text>
-                  <Text style={[styles.modalItemSub, { color: colors.textSecondary }]}>
-                    {day.exercises?.length || 0} exercises
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {currentRoutine?.days?.map((day, index) => {
+                const isScheduled = nextScheduled?.day?.id === day.id;
+                return (
+                  <TouchableOpacity
+                    key={day.id}
+                    style={[
+                      styles.modalItem,
+                      { borderBottomColor: colors.border },
+                      isScheduled && { backgroundColor: colors.primary + '10' }
+                    ]}
+                    onPress={() => handleSelectDay(currentRoutine, day)}
+                  >
+                    <View style={styles.dayItemContent}>
+                      <Text style={[
+                        styles.modalItemText,
+                        { color: isScheduled ? colors.primary : colors.text }
+                      ]}>
+                        {day.name}
+                      </Text>
+                      {isScheduled && (
+                        <View style={[styles.scheduledBadge, { backgroundColor: colors.primary }]}>
+                          <Text style={styles.scheduledBadgeText}>Next</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={[styles.modalItemSub, { color: colors.textSecondary }]}>
+                      {day.exercises?.length || 0} exercises
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
             <View style={styles.modalActions}>
               <TouchableOpacity
@@ -384,6 +474,28 @@ const styles = StyleSheet.create({
   routineDays: {
     fontSize: fontSize.sm,
     marginTop: spacing.xs,
+  },
+  nextDayContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+    gap: spacing.xs,
+  },
+  nextDayLabel: {
+    fontSize: fontSize.sm,
+  },
+  nextDayName: {
+    fontSize: fontSize.md,
+    fontWeight: '600',
+  },
+  behindBadge: {
+    marginTop: spacing.sm,
+    padding: spacing.sm,
+    borderRadius: borderRadius.md,
+  },
+  behindBadgeText: {
+    fontSize: fontSize.xs,
+    fontWeight: '500',
   },
   emptyRoutineText: {
     fontSize: fontSize.md,
@@ -492,6 +604,37 @@ const styles = StyleSheet.create({
   },
   modalCancelText: {
     fontSize: fontSize.md,
+  },
+  scheduledDayButton: {
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  scheduledDayButtonText: {
+    color: '#FFFFFF',
+    fontSize: fontSize.md,
+    fontWeight: '600',
+  },
+  skipHint: {
+    fontSize: fontSize.sm,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
+  },
+  dayItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  scheduledBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+  },
+  scheduledBadgeText: {
+    color: '#FFFFFF',
+    fontSize: fontSize.xs,
+    fontWeight: '600',
   },
   gymPromptCard: {
     padding: spacing.lg,

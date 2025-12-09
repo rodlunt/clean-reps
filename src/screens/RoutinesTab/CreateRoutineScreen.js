@@ -1,10 +1,17 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal, FlatList, Switch } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useWorkout } from '../../context/WorkoutContext';
 import { useExercises } from '../../context/ExerciseContext';
 import { useGymProfile } from '../../context/GymProfileContext';
 import { spacing, fontSize, borderRadius } from '../../theme';
+
+// Check if exercise is bodyweight-based
+const isBodyweightExercise = (exercise) => {
+  if (!exercise || !exercise.equipment) return false;
+  const bwEquipment = ['body weight', 'bodyweight', 'body only'];
+  return exercise.equipment.some(eq => bwEquipment.includes(eq.toLowerCase()));
+};
 
 export default function CreateRoutineScreen({ navigation }) {
   const { colors } = useTheme();
@@ -65,6 +72,7 @@ export default function CreateRoutineScreen({ navigation }) {
   };
 
   const selectExercise = (exercise) => {
+    const isBW = isBodyweightExercise(exercise);
     setDays(days.map(d => {
       if (d.id === activeDayId) {
         // Check if exercise already exists
@@ -78,12 +86,28 @@ export default function CreateRoutineScreen({ navigation }) {
             exerciseId: exercise.id,
             name: exercise.name,
             sets: 3,
+            isBodyweight: isBW,
+            useBodyweight: isBW, // Default to bodyweight-only for BW exercises
           }],
         };
       }
       return d;
     }));
     setShowExercisePicker(false);
+  };
+
+  const toggleBodyweight = (dayId, exerciseId) => {
+    setDays(days.map(d => {
+      if (d.id === dayId) {
+        return {
+          ...d,
+          exercises: d.exercises.map(ex =>
+            ex.id === exerciseId ? { ...ex, useBodyweight: !ex.useBodyweight } : ex
+          ),
+        };
+      }
+      return d;
+    }));
   };
 
   const updateExerciseSets = (dayId, exerciseId, sets) => {
@@ -128,6 +152,7 @@ export default function CreateRoutineScreen({ navigation }) {
           exerciseId: ex.exerciseId,
           name: ex.name,
           sets: ex.sets,
+          useBodyweight: ex.useBodyweight || false,
         })),
       })),
     };
@@ -235,9 +260,25 @@ export default function CreateRoutineScreen({ navigation }) {
 
             {day.exercises.map((exercise) => (
               <View key={exercise.id} style={[styles.exerciseRow, { borderTopColor: colors.border }]}>
-                <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
-                  {exercise.name}
-                </Text>
+                <View style={styles.exerciseInfo}>
+                  <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
+                    {exercise.name}
+                  </Text>
+                  {exercise.isBodyweight && (
+                    <View style={styles.bodyweightToggle}>
+                      <Text style={[styles.bodyweightLabel, { color: colors.textSecondary }]}>
+                        {exercise.useBodyweight ? 'BW only' : '+Weight'}
+                      </Text>
+                      <Switch
+                        value={!exercise.useBodyweight}
+                        onValueChange={() => toggleBodyweight(day.id, exercise.id)}
+                        trackColor={{ false: colors.border, true: colors.primary + '60' }}
+                        thumbColor={exercise.useBodyweight ? colors.card : colors.primary}
+                        style={styles.switch}
+                      />
+                    </View>
+                  )}
+                </View>
                 <View style={styles.setsContainer}>
                   <TextInput
                     style={[styles.setsInput, { backgroundColor: colors.background, color: colors.text }]}
@@ -423,9 +464,24 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     borderTopWidth: 1,
   },
-  exerciseName: {
+  exerciseInfo: {
     flex: 1,
+  },
+  exerciseName: {
     fontSize: fontSize.md,
+  },
+  bodyweightToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  bodyweightLabel: {
+    fontSize: fontSize.xs,
+    marginRight: spacing.xs,
+  },
+  switch: {
+    transform: [{ scale: 0.7 }],
+    marginLeft: -8,
   },
   setsContainer: {
     flexDirection: 'row',
