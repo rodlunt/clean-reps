@@ -1,25 +1,27 @@
 {
   "expo": {
-    "name": "workout-temp",
-    "slug": "workout-temp",
+    "name": "Clean Reps",
+    "slug": "clean-reps",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#14B8A6"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cleanreps.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#14B8A6"
       },
+      "package": "com.cleanreps.app",
       "edgeToEdgeEnabled": true
     },
     "web": {
