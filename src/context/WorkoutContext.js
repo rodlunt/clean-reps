@@ -40,27 +40,39 @@ export function WorkoutProvider({ children }) {
     }
   };
 
-  const saveRoutines = async (newRoutines) => {
-    setRoutines(newRoutines);
-    await AsyncStorage.setItem(ROUTINES_KEY, JSON.stringify(newRoutines));
-  };
-
   const addRoutine = async (routine) => {
-    const newRoutines = [...routines, routine];
-    await saveRoutines(newRoutines);
-    return routine;
+    return new Promise((resolve) => {
+      setRoutines(prev => {
+        const newRoutines = [...prev, routine];
+        AsyncStorage.setItem(ROUTINES_KEY, JSON.stringify(newRoutines));
+        resolve(routine);
+        return newRoutines;
+      });
+    });
   };
 
   const updateRoutine = async (routineId, updates) => {
-    const newRoutines = routines.map(r =>
-      r.id === routineId ? { ...r, ...updates } : r
-    );
-    await saveRoutines(newRoutines);
+    return new Promise((resolve) => {
+      setRoutines(prev => {
+        const newRoutines = prev.map(r =>
+          r.id === routineId ? { ...r, ...updates } : r
+        );
+        AsyncStorage.setItem(ROUTINES_KEY, JSON.stringify(newRoutines));
+        resolve();
+        return newRoutines;
+      });
+    });
   };
 
   const deleteRoutine = async (routineId) => {
-    const newRoutines = routines.filter(r => r.id !== routineId);
-    await saveRoutines(newRoutines);
+    return new Promise((resolve) => {
+      setRoutines(prev => {
+        const newRoutines = prev.filter(r => r.id !== routineId);
+        AsyncStorage.setItem(ROUTINES_KEY, JSON.stringify(newRoutines));
+        resolve();
+        return newRoutines;
+      });
+    });
   };
 
   const saveWorkoutSession = async (session) => {

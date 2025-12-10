@@ -1,12 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BlurView } from 'expo-blur';
 import { useTheme } from '../../context/ThemeContext';
 import { useWorkout } from '../../context/WorkoutContext';
 import { useGymProfile } from '../../context/GymProfileContext';
 import { useSettings } from '../../context/SettingsContext';
-import { spacing, fontSize, borderRadius } from '../../theme';
+import { spacing, fontSize, borderRadius, shadows } from '../../theme';
 import Button from '../../components/common/Button';
+import GradientCard from '../../components/common/GradientCard';
 
 const GYM_PROMPT_DISMISSED_KEY = '@gym_setup_prompt_dismissed';
 
@@ -88,6 +90,9 @@ export default function HomeScreen({ navigation }) {
         if (!dismissed) {
           setShowGymPrompt(true);
         }
+      } else {
+        // Hide prompt when at least one gym profile exists
+        setShowGymPrompt(false);
       }
     };
     checkGymPrompt();
@@ -194,42 +199,69 @@ export default function HomeScreen({ navigation }) {
         </View>
       )}
 
-      {/* Current Routine Card */}
-      {currentRoutine ? (
+      {/* Gym Profile Quick Access */}
+      {!showGymPrompt && (
         <TouchableOpacity
-          style={[styles.routineCard, { backgroundColor: colors.card }]}
-          onPress={() => setShowRoutinePicker(true)}
+          style={[styles.gymQuickAccess, { backgroundColor: colors.card }]}
+          onPress={() => navigation.navigate('Settings', { screen: 'GymSetup' })}
         >
-          <Text style={[styles.routineLabel, { color: colors.textSecondary }]}>
-            CURRENT ROUTINE
+          <Text style={[styles.gymQuickLabel, { color: colors.textSecondary }]}>
+            GYM PROFILE
           </Text>
-          <Text style={[styles.routineName, { color: colors.text }]}>
-            {currentRoutine.name}
+          <Text style={[styles.gymQuickName, { color: colors.text }]}>
+            {gymProfiles.length > 0
+              ? gymProfiles.find(g => g.id === gymProfiles[0]?.id)?.name || 'Set up gym'
+              : 'No gym set up'}
           </Text>
-          {nextScheduled && (
-            <View style={styles.nextDayContainer}>
-              <Text style={[styles.nextDayLabel, { color: colors.textSecondary }]}>
-                Next up:
-              </Text>
-              <Text style={[styles.nextDayName, { color: colors.primary }]}>
-                {nextScheduled.day.name}
-              </Text>
-            </View>
-          )}
-          {behindSchedule && (
-            <View style={[styles.behindBadge, { backgroundColor: colors.primary + '20' }]}>
-              <Text style={[styles.behindBadgeText, { color: colors.primary }]}>
-                Behind schedule? Tap "Start" to pick any day
-              </Text>
-            </View>
-          )}
-          <Text style={[styles.routineDays, { color: colors.textSecondary }]}>
-            {currentRoutine.days?.length || 0} days • Tap to change routine
+          <Text style={[styles.gymQuickHint, { color: colors.primary }]}>
+            Tap to manage
           </Text>
         </TouchableOpacity>
+      )}
+
+      {/* Current Routine Card */}
+      {currentRoutine ? (
+        <GradientCard style={styles.routineCard} shadow="md">
+          <TouchableOpacity onPress={() => setShowRoutinePicker(true)}>
+            <Text style={[styles.routineLabel, { color: colors.textSecondary }]}>
+              CURRENT ROUTINE
+            </Text>
+            <Text style={[styles.routineName, { color: colors.text }]}>
+              {currentRoutine.name}
+            </Text>
+            {nextScheduled && (
+              <View style={styles.nextDayContainer}>
+                <Text style={[styles.nextDayLabel, { color: colors.textSecondary }]}>
+                  Next up:
+                </Text>
+                <Text style={[styles.nextDayName, { color: colors.primary }]}>
+                  {nextScheduled.day.name}
+                </Text>
+              </View>
+            )}
+            {behindSchedule && (
+              <View style={[styles.behindBadge, { backgroundColor: colors.primary + '20' }]}>
+                <Text style={[styles.behindBadgeText, { color: colors.primary }]}>
+                  Behind schedule? Tap "Start" to pick any day
+                </Text>
+              </View>
+            )}
+            <Text style={[styles.routineDays, { color: colors.textSecondary }]}>
+              {currentRoutine.days?.length || 0} days • Tap to change routine
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.clearRoutineButton}
+            onPress={() => setCurrentRoutine(null)}
+          >
+            <Text style={[styles.clearRoutineText, { color: colors.error }]}>
+              Clear Routine
+            </Text>
+          </TouchableOpacity>
+        </GradientCard>
       ) : routines.length > 0 ? (
         <TouchableOpacity
-          style={[styles.routineCard, styles.emptyRoutineCard, { backgroundColor: colors.card, borderColor: colors.primary }]}
+          style={[styles.routineCard, styles.emptyRoutineCard, { backgroundColor: colors.card, borderColor: colors.primary }, shadows.sm]}
           onPress={() => setShowRoutinePicker(true)}
         >
           <Text style={[styles.emptyRoutineText, { color: colors.textSecondary }]}>
@@ -240,14 +272,14 @@ export default function HomeScreen({ navigation }) {
           </Text>
         </TouchableOpacity>
       ) : (
-        <View style={[styles.routineCard, { backgroundColor: colors.card }]}>
+        <GradientCard style={styles.routineCard} shadow="sm">
           <Text style={[styles.emptyRoutineText, { color: colors.textSecondary }]}>
             No routines yet
           </Text>
           <Text style={[styles.routineDays, { color: colors.textSecondary }]}>
             Go to Routines tab to create one
           </Text>
-        </View>
+        </GradientCard>
       )}
 
       {/* Start Button */}
@@ -264,30 +296,30 @@ export default function HomeScreen({ navigation }) {
         THIS WEEK
       </Text>
       <View style={styles.statsRow}>
-        <View style={[styles.statCard, { backgroundColor: colors.card }]}>
+        <GradientCard style={styles.statCard} shadow="sm">
           <Text style={[styles.statValue, { color: colors.primary }]}>
             {workoutsThisWeek}
           </Text>
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
             Workouts
           </Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: colors.card }]}>
+        </GradientCard>
+        <GradientCard style={styles.statCard} shadow="sm">
           <Text style={[styles.statValue, { color: colors.primary }]}>
             {displayWeight(weeklyVolume) > 1000 ? `${(displayWeight(weeklyVolume) / 1000).toFixed(1)}k` : Math.round(displayWeight(weeklyVolume))}
           </Text>
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
             {units} Volume
           </Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: colors.card }]}>
+        </GradientCard>
+        <GradientCard style={styles.statCard} shadow="sm">
           <Text style={[styles.statValue, { color: colors.primary }]}>
             {pbCount}
           </Text>
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
             PRs Set
           </Text>
-        </View>
+        </GradientCard>
       </View>
 
       {/* Mini Volume Chart */}
@@ -296,7 +328,7 @@ export default function HomeScreen({ navigation }) {
           <Text style={[styles.sectionTitle, { color: colors.textSecondary, marginTop: spacing.lg }]}>
             VOLUME TREND (4 WEEKS)
           </Text>
-          <View style={[styles.miniChart, { backgroundColor: colors.card }]}>
+          <GradientCard style={styles.miniChart} shadow="sm">
             <View style={styles.chartBars}>
               {volumeHistory.map((vol, i) => (
                 <View key={i} style={styles.chartBarWrapper}>
@@ -315,7 +347,7 @@ export default function HomeScreen({ navigation }) {
                 </View>
               ))}
             </View>
-          </View>
+          </GradientCard>
         </>
       )}
 
@@ -327,33 +359,39 @@ export default function HomeScreen({ navigation }) {
         onRequestClose={() => setShowRoutinePicker(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>
-              Select Routine
-            </Text>
-            <ScrollView style={styles.modalList}>
-              {routines.map(routine => (
-                <TouchableOpacity
-                  key={routine.id}
-                  style={[styles.modalItem, { borderBottomColor: colors.border }]}
-                  onPress={() => handleSelectRoutine(routine)}
-                >
-                  <Text style={[styles.modalItemText, { color: colors.text }]}>
-                    {routine.name}
-                  </Text>
-                  <Text style={[styles.modalItemSub, { color: colors.textSecondary }]}>
-                    {routine.days?.length || 0} days
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-            <TouchableOpacity
-              style={styles.modalCancel}
-              onPress={() => setShowRoutinePicker(false)}
-            >
-              <Text style={[styles.modalCancelText, { color: colors.error }]}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
+          <BlurView
+            intensity={Platform.OS === 'ios' ? 25 : 100}
+            tint="dark"
+            style={[styles.modalContent, styles.blurModal]}
+          >
+            <View style={[styles.modalInner, { backgroundColor: colors.card + 'F5' }]}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                Select Routine
+              </Text>
+              <ScrollView style={styles.modalList}>
+                {routines.map(routine => (
+                  <TouchableOpacity
+                    key={routine.id}
+                    style={[styles.modalItem, { borderBottomColor: colors.border }]}
+                    onPress={() => handleSelectRoutine(routine)}
+                  >
+                    <Text style={[styles.modalItemText, { color: colors.text }]}>
+                      {routine.name}
+                    </Text>
+                    <Text style={[styles.modalItemSub, { color: colors.textSecondary }]}>
+                      {routine.days?.length || 0} days
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              <TouchableOpacity
+                style={styles.modalCancel}
+                onPress={() => setShowRoutinePicker(false)}
+              >
+                <Text style={[styles.modalCancelText, { color: colors.error }]}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </BlurView>
         </View>
       </Modal>
 
@@ -365,75 +403,81 @@ export default function HomeScreen({ navigation }) {
         onRequestClose={() => setShowDayPicker(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>
-              {currentRoutine?.name || 'Select Day'}
-            </Text>
-            {nextScheduled && (
-              <TouchableOpacity
-                style={[styles.scheduledDayButton, { backgroundColor: colors.primary }]}
-                onPress={() => handleSelectDay(currentRoutine, nextScheduled.day)}
-              >
-                <Text style={styles.scheduledDayButtonText}>
-                  Start Scheduled: {nextScheduled.day.name}
-                </Text>
-              </TouchableOpacity>
-            )}
-            {behindSchedule && (
-              <Text style={[styles.skipHint, { color: colors.textSecondary }]}>
-                Or skip ahead to a different day:
+          <BlurView
+            intensity={Platform.OS === 'ios' ? 25 : 100}
+            tint="dark"
+            style={[styles.modalContent, styles.blurModal]}
+          >
+            <View style={[styles.modalInner, { backgroundColor: colors.card + 'F5' }]}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                {currentRoutine?.name || 'Select Day'}
               </Text>
-            )}
-            <ScrollView style={styles.modalList}>
-              {currentRoutine?.days?.map((day, index) => {
-                const isScheduled = nextScheduled?.day?.id === day.id;
-                return (
-                  <TouchableOpacity
-                    key={day.id}
-                    style={[
-                      styles.modalItem,
-                      { borderBottomColor: colors.border },
-                      isScheduled && { backgroundColor: colors.primary + '10' }
-                    ]}
-                    onPress={() => handleSelectDay(currentRoutine, day)}
-                  >
-                    <View style={styles.dayItemContent}>
-                      <Text style={[
-                        styles.modalItemText,
-                        { color: isScheduled ? colors.primary : colors.text }
-                      ]}>
-                        {day.name}
-                      </Text>
-                      {isScheduled && (
-                        <View style={[styles.scheduledBadge, { backgroundColor: colors.primary }]}>
-                          <Text style={styles.scheduledBadgeText}>Next</Text>
-                        </View>
-                      )}
-                    </View>
-                    <Text style={[styles.modalItemSub, { color: colors.textSecondary }]}>
-                      {day.exercises?.length || 0} exercises
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={styles.modalSecondary}
-                onPress={handleQuickStart}
-              >
-                <Text style={[styles.modalSecondaryText, { color: colors.primary }]}>
-                  Quick Start (Empty)
+              {nextScheduled && (
+                <TouchableOpacity
+                  style={[styles.scheduledDayButton, { backgroundColor: colors.primary }]}
+                  onPress={() => handleSelectDay(currentRoutine, nextScheduled.day)}
+                >
+                  <Text style={styles.scheduledDayButtonText}>
+                    Start Scheduled: {nextScheduled.day.name}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {behindSchedule && (
+                <Text style={[styles.skipHint, { color: colors.textSecondary }]}>
+                  Or skip ahead to a different day:
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalCancel}
-                onPress={() => setShowDayPicker(false)}
-              >
-                <Text style={[styles.modalCancelText, { color: colors.error }]}>Cancel</Text>
-              </TouchableOpacity>
+              )}
+              <ScrollView style={styles.modalList}>
+                {currentRoutine?.days?.map((day, index) => {
+                  const isScheduled = nextScheduled?.day?.id === day.id;
+                  return (
+                    <TouchableOpacity
+                      key={day.id}
+                      style={[
+                        styles.modalItem,
+                        { borderBottomColor: colors.border },
+                        isScheduled && { backgroundColor: colors.primary + '10' }
+                      ]}
+                      onPress={() => handleSelectDay(currentRoutine, day)}
+                    >
+                      <View style={styles.dayItemContent}>
+                        <Text style={[
+                          styles.modalItemText,
+                          { color: isScheduled ? colors.primary : colors.text }
+                        ]}>
+                          {day.name}
+                        </Text>
+                        {isScheduled && (
+                          <View style={[styles.scheduledBadge, { backgroundColor: colors.primary }]}>
+                            <Text style={styles.scheduledBadgeText}>Next</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={[styles.modalItemSub, { color: colors.textSecondary }]}>
+                        {day.exercises?.length || 0} exercises
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={styles.modalSecondary}
+                  onPress={handleQuickStart}
+                >
+                  <Text style={[styles.modalSecondaryText, { color: colors.primary }]}>
+                    Quick Start (Empty)
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.modalCancel}
+                  onPress={() => setShowDayPicker(false)}
+                >
+                  <Text style={[styles.modalCancelText, { color: colors.error }]}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </BlurView>
         </View>
       </Modal>
     </ScrollView>
@@ -563,8 +607,15 @@ const styles = StyleSheet.create({
   modalContent: {
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
-    padding: spacing.lg,
     maxHeight: '70%',
+  },
+  blurModal: {
+    overflow: 'hidden',
+  },
+  modalInner: {
+    padding: spacing.lg,
+    borderTopLeftRadius: borderRadius.xl,
+    borderTopRightRadius: borderRadius.xl,
   },
   modalTitle: {
     fontSize: fontSize.lg,
@@ -671,6 +722,38 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
   },
   gymPromptLaterText: {
+    fontSize: fontSize.sm,
+  },
+  clearRoutineButton: {
+    marginTop: spacing.sm,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(128,128,128,0.2)',
+  },
+  clearRoutineText: {
+    fontSize: fontSize.sm,
+    textAlign: 'center',
+  },
+  gymQuickAccess: {
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  gymQuickLabel: {
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  gymQuickName: {
+    fontSize: fontSize.md,
+    fontWeight: '500',
+    flex: 1,
+    marginLeft: spacing.md,
+  },
+  gymQuickHint: {
     fontSize: fontSize.sm,
   },
 });

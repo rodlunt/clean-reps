@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 
 import WorkoutStack from './WorkoutStack';
@@ -20,6 +21,7 @@ function TabIcon({ name, focused, color }) {
 
 export default function TabNavigator() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tab.Navigator
@@ -29,6 +31,8 @@ export default function TabNavigator() {
           backgroundColor: colors.card,
           borderTopColor: colors.border,
           borderTopWidth: 1,
+          paddingBottom: Math.max(insets.bottom, 8),
+          height: 56 + Math.max(insets.bottom, 8),
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,

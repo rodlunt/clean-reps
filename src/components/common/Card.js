@@ -2,14 +2,16 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, borderRadius } from '../../theme';
+import { shadowsLight, shadowsDark } from '../../theme/colors';
 
 export default function Card({
   children,
   onPress,
   style,
   padding = 'medium',
+  shadow = 'md',
 }) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
 
   const getPadding = () => {
     switch (padding) {
@@ -24,12 +26,19 @@ export default function Card({
     }
   };
 
+  const getShadow = () => {
+    if (!shadow || shadow === 'none') return {};
+    const shadowSet = isDark ? shadowsDark : shadowsLight;
+    return shadowSet[shadow] || shadowSet.md;
+  };
+
   const cardStyle = [
     styles.card,
     {
       backgroundColor: colors.card,
       padding: getPadding(),
     },
+    getShadow(),
     style,
   ];
 

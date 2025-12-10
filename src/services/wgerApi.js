@@ -4,79 +4,119 @@ const BASE_URL = 'https://wger.de/api/v2';
 const CACHE_KEY = 'wger_exercise_images';
 const CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-// Map our exercise names to wger search terms
+// Direct WGER exercise base IDs for accurate image matching
+// These IDs correspond to specific exercises in the WGER database
+const WGER_EXERCISE_BASE_IDS = {
+  'bench-press': 192,
+  'incline-bench-press': 163,
+  'dumbbell-bench-press': 97,
+  'dumbbell-flyes': 145,
+  'push-ups': 4,
+  'squat': 111,
+  'deadlift': 105,
+  'romanian-deadlift': 116,
+  'leg-press': 110,
+  'leg-extension': 113,
+  'leg-curl': 114,
+  'lunges': 112,
+  'pull-ups': 107,
+  'chin-ups': 181,
+  'lat-pulldown': 122,
+  'barbell-row': 109,
+  'dumbbell-row': 106,
+  'overhead-press': 119,
+  'dumbbell-shoulder-press': 123,
+  'lateral-raises': 148,
+  'barbell-curl': 74,
+  'dumbbell-curl': 81,
+  'hammer-curl': 301,
+  'tricep-pushdown': 92,
+  'dips': 83,
+  'calf-raises': 103,
+  'plank': 238,
+  'crunches': 91,
+  'hip-thrust': 171,
+  'kettlebell-swing': 249,
+  'shrugs': 187,
+  'face-pulls': 670,
+  'cable-row': 108,
+};
+
+// Map our exercise names to wger search terms (fallback for exercises without direct IDs)
 const EXERCISE_NAME_MAP = {
-  'bench-press': 'bench press',
+  'bench-press': 'bench press barbell',
   'incline-bench-press': 'incline bench press',
   'decline-bench-press': 'decline bench press',
-  'dumbbell-bench-press': 'dumbbell bench press',
+  'dumbbell-bench-press': 'dumbbell bench press flat',
   'incline-dumbbell-press': 'incline dumbbell press',
   'decline-dumbbell-press': 'decline dumbbell press',
-  'dumbbell-flyes': 'dumbbell flyes',
-  'incline-dumbbell-flyes': 'incline dumbbell flyes',
-  'push-ups': 'push ups',
-  'cable-crossover': 'cable crossover',
-  'machine-chest-press': 'chest press machine',
-  'pec-deck-fly': 'pec deck',
-  'squat': 'squat',
-  'front-squat': 'front squat',
-  'goblet-squat': 'goblet squat',
-  'leg-press': 'leg press',
-  'hack-squat': 'hack squat',
-  'leg-extension': 'leg extension',
-  'lunges': 'lunges',
-  'dumbbell-lunges': 'dumbbell lunges',
-  'deadlift': 'deadlift',
-  'romanian-deadlift': 'romanian deadlift',
-  'dumbbell-romanian-deadlift': 'dumbbell romanian deadlift',
-  'leg-curl': 'leg curl',
-  'pull-ups': 'pull ups',
-  'chin-ups': 'chin ups',
-  'assisted-pull-ups': 'assisted pull ups',
-  'lat-pulldown': 'lat pulldown',
-  'machine-lat-pulldown': 'lat pulldown',
-  'barbell-row': 'barbell row',
-  'dumbbell-row': 'dumbbell row',
-  'cable-row': 'cable row',
+  'dumbbell-flyes': 'dumbbell fly',
+  'incline-dumbbell-flyes': 'incline dumbbell fly',
+  'push-ups': 'push up',
+  'cable-crossover': 'cable fly crossover',
+  'machine-chest-press': 'machine chest press',
+  'pec-deck-fly': 'pec deck butterfly',
+  'squat': 'barbell squat',
+  'front-squat': 'front squat barbell',
+  'goblet-squat': 'goblet squat dumbbell',
+  'leg-press': 'leg press machine',
+  'hack-squat': 'hack squat machine',
+  'leg-extension': 'leg extension machine',
+  'lunges': 'lunge bodyweight',
+  'dumbbell-lunges': 'lunge dumbbell',
+  'deadlift': 'deadlift barbell',
+  'romanian-deadlift': 'romanian deadlift stiff leg',
+  'dumbbell-romanian-deadlift': 'romanian deadlift dumbbell',
+  'leg-curl': 'leg curl lying',
+  'pull-ups': 'pull up',
+  'chin-ups': 'chin up',
+  'assisted-pull-ups': 'assisted pull up',
+  'lat-pulldown': 'lat pulldown cable',
+  'machine-lat-pulldown': 'lat pulldown machine',
+  'barbell-row': 'bent over barbell row',
+  'dumbbell-row': 'one arm dumbbell row',
+  'cable-row': 'seated cable row',
   't-bar-row': 't-bar row',
-  'face-pulls': 'face pulls',
-  'overhead-press': 'overhead press',
-  'dumbbell-shoulder-press': 'dumbbell shoulder press',
-  'machine-shoulder-press': 'shoulder press machine',
-  'lateral-raises': 'lateral raises',
-  'front-raises': 'front raises',
-  'reverse-flyes': 'reverse flyes',
-  'barbell-curl': 'barbell curl',
-  'dumbbell-curl': 'dumbbell curl',
-  'hammer-curl': 'hammer curl',
+  'face-pulls': 'face pull cable',
+  'overhead-press': 'military press overhead',
+  'dumbbell-shoulder-press': 'dumbbell shoulder press seated',
+  'machine-shoulder-press': 'machine shoulder press',
+  'lateral-raises': 'lateral raise dumbbell',
+  'front-raises': 'front raise dumbbell',
+  'reverse-flyes': 'reverse fly rear delt',
+  'barbell-curl': 'barbell bicep curl',
+  'dumbbell-curl': 'dumbbell bicep curl',
+  'hammer-curl': 'hammer curl dumbbell',
   'preacher-curl': 'preacher curl',
-  'ez-bar-curl': 'ez bar curl',
-  'cable-curl': 'cable curl',
-  'tricep-pushdown': 'tricep pushdown',
-  'skull-crushers': 'skull crushers',
-  'overhead-tricep-extension': 'tricep extension',
-  'dips': 'dips',
+  'dumbbell-preacher-curl': 'preacher curl dumbbell',
+  'ez-bar-curl': 'ez bar curl bicep',
+  'cable-curl': 'cable bicep curl',
+  'tricep-pushdown': 'tricep pushdown cable',
+  'skull-crushers': 'skull crusher lying tricep',
+  'overhead-tricep-extension': 'overhead tricep extension',
+  'dips': 'dip parallel bars tricep',
   'close-grip-bench-press': 'close grip bench press',
-  'calf-raises': 'calf raises',
-  'seated-calf-raises': 'seated calf raises',
-  'hip-thrust': 'hip thrust',
+  'calf-raises': 'standing calf raise',
+  'seated-calf-raises': 'seated calf raise machine',
+  'hip-thrust': 'barbell hip thrust glute',
   'glute-bridge': 'glute bridge',
-  'hip-abduction': 'hip abduction',
-  'hip-adduction': 'hip adduction',
-  'cable-kickback': 'cable kickback',
-  'plank': 'plank',
-  'crunches': 'crunches',
-  'decline-situps': 'sit ups',
-  'decline-crunches': 'crunches',
-  'hanging-leg-raises': 'hanging leg raises',
-  'cable-crunch': 'cable crunch',
+  'hip-abduction': 'hip abduction machine',
+  'hip-adduction': 'hip adduction machine',
+  'cable-kickback': 'cable glute kickback',
+  'plank': 'plank core',
+  'crunches': 'crunch abdominal',
+  'decline-situps': 'decline sit up',
+  'decline-crunches': 'decline crunch',
+  'decline-russian-twist': 'russian twist decline',
+  'hanging-leg-raises': 'hanging leg raise',
+  'cable-crunch': 'cable crunch kneeling',
   'russian-twist': 'russian twist',
-  'shrugs': 'shrugs',
-  'barbell-shrugs': 'barbell shrugs',
-  'wrist-curls': 'wrist curls',
-  'farmers-walk': 'farmers walk',
+  'shrugs': 'dumbbell shrug',
+  'barbell-shrugs': 'barbell shrug',
+  'wrist-curls': 'wrist curl forearm',
+  'farmers-walk': 'farmer walk carry',
   'kettlebell-swing': 'kettlebell swing',
-  'kettlebell-goblet-squat': 'goblet squat',
+  'kettlebell-goblet-squat': 'goblet squat kettlebell',
   'smith-machine-bench-press': 'smith machine bench press',
   'smith-machine-incline-press': 'smith machine incline press',
   'smith-machine-squat': 'smith machine squat',
@@ -155,19 +195,25 @@ class WgerApiService {
       return this.imageCache[exerciseId];
     }
 
-    const searchTerm = EXERCISE_NAME_MAP[exerciseId] || exerciseId.replace(/-/g, ' ');
-
     try {
-      // Search for exercise
-      const exercises = await this.searchExercise(searchTerm);
+      let exerciseBaseId = null;
 
-      if (exercises.length === 0) {
-        this.imageCache[exerciseId] = null;
-        return null;
+      // First, check if we have a direct WGER exercise base ID mapping
+      if (WGER_EXERCISE_BASE_IDS[exerciseId]) {
+        exerciseBaseId = WGER_EXERCISE_BASE_IDS[exerciseId];
+      } else {
+        // Fall back to search
+        const searchTerm = EXERCISE_NAME_MAP[exerciseId] || exerciseId.replace(/-/g, ' ');
+        const exercises = await this.searchExercise(searchTerm);
+
+        if (exercises.length === 0) {
+          this.imageCache[exerciseId] = null;
+          return null;
+        }
+
+        // Get the exercise base ID from the first result
+        exerciseBaseId = exercises[0].exercise_base;
       }
-
-      // Get the exercise base ID from the first result
-      const exerciseBaseId = exercises[0].exercise_base;
 
       // Fetch images for this exercise
       const images = await this.getExerciseImages(exerciseBaseId);

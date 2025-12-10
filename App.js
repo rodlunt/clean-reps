@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
+import * as NavigationBar from 'expo-navigation-bar';
 
 const TEAL = '#14B8A6';
 
@@ -24,6 +25,15 @@ export default function App() {
   const handleSplashComplete = useCallback(() => {
     setShowSplash(false);
   }, []);
+
+  // Set up Android navigation bar to auto-hide (sticky immersive mode)
+  useEffect(() => {
+    if (Platform.OS === 'android' && !showSplash) {
+      // Enable sticky immersive mode - nav bar auto-hides, swipe to reveal temporarily
+      NavigationBar.setVisibilityAsync('hidden');
+      NavigationBar.setBehaviorAsync('overlay-swipe');
+    }
+  }, [showSplash]);
 
   // Show animated splash
   if (showSplash) {

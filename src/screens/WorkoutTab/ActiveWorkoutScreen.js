@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal, Image, ActivityIndicator, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Image, ActivityIndicator, Animated } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useWorkout } from '../../context/WorkoutContext';
 import { useExercises } from '../../context/ExerciseContext';
 import { useSettings } from '../../context/SettingsContext';
 import { spacing, fontSize, borderRadius } from '../../theme';
 import WeightRoller from '../../components/common/WeightRoller';
+import RepsRoller from '../../components/common/RepsRoller';
 
 // Demo exercises for quick start without routine
 const DEMO_EXERCISES = [
@@ -297,13 +298,10 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
                 </View>
                 <Text style={[styles.inputSeparator, { color: colors.textSecondary }]}>x</Text>
                 <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
-                    placeholder={prevSet?.reps ? `${prevSet.reps}` : 'reps'}
-                    placeholderTextColor={colors.placeholder}
-                    keyboardType="numeric"
+                  <RepsRoller
                     value={set.reps}
-                    onChangeText={(value) => updateSet(index, 'reps', value)}
+                    onChange={(value) => updateSet(index, 'reps', value)}
+                    placeholder={prevSet?.reps ? `${prevSet.reps}` : null}
                   />
                   {prevSet?.reps && !set.reps && (
                     <Text style={[styles.prevHint, { color: colors.textSecondary }]}>prev</Text>

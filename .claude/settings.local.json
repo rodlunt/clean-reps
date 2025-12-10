@@ -5,7 +5,8 @@
       "Bash(cd:*)",
       "Bash(npm ls:*)",
       "Bash(npm uninstall:*)",
-      "Bash(npx eas-cli:*)"
+      "Bash(npx eas-cli:*)",
+      "Bash(npx expo install:*)"
     ],
     "deny": [],
     "ask": []

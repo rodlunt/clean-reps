@@ -692,6 +692,177 @@
       "equipment": ["dumbbells"],
       "category": "compound",
       "difficulty": "beginner"
+    },
+    {
+      "id": "step-ups",
+      "name": "Step Ups",
+      "primaryMuscles": ["quadriceps"],
+      "secondaryMuscles": ["glutes", "hamstrings", "calves"],
+      "equipment": ["bodyweight"],
+      "category": "compound",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "dumbbell-step-ups",
+      "name": "Dumbbell Step Ups",
+      "primaryMuscles": ["quadriceps"],
+      "secondaryMuscles": ["glutes", "hamstrings", "calves"],
+      "equipment": ["dumbbells"],
+      "category": "compound",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "treadmill",
+      "name": "Treadmill",
+      "primaryMuscles": ["cardio"],
+      "secondaryMuscles": ["quadriceps", "hamstrings", "calves"],
+      "equipment": ["treadmill"],
+      "category": "cardio",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "exercise-bike",
+      "name": "Exercise Bike",
+      "primaryMuscles": ["cardio"],
+      "secondaryMuscles": ["quadriceps", "hamstrings", "calves"],
+      "equipment": ["exercise-bike"],
+      "category": "cardio",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "recumbent-bike",
+      "name": "Recumbent Bike",
+      "primaryMuscles": ["cardio"],
+      "secondaryMuscles": ["quadriceps", "hamstrings"],
+      "equipment": ["recumbent-bike"],
+      "category": "cardio",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "skipping",
+      "name": "Skipping / Jump Rope",
+      "primaryMuscles": ["cardio"],
+      "secondaryMuscles": ["calves", "shoulders", "core"],
+      "equipment": ["jump-rope"],
+      "category": "cardio",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "boxing",
+      "name": "Boxing / Heavy Bag",
+      "primaryMuscles": ["cardio"],
+      "secondaryMuscles": ["shoulders", "core", "back"],
+      "equipment": ["punching-bag"],
+      "category": "cardio",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "sled-push",
+      "name": "Sled Push",
+      "primaryMuscles": ["quadriceps"],
+      "secondaryMuscles": ["glutes", "hamstrings", "calves", "core"],
+      "equipment": ["sled"],
+      "category": "compound",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "sled-pull",
+      "name": "Sled Pull",
+      "primaryMuscles": ["back"],
+      "secondaryMuscles": ["biceps", "hamstrings", "glutes"],
+      "equipment": ["sled"],
+      "category": "compound",
+      "difficulty": "intermediate"
+    },
+    {
+      "id": "band-pull-apart",
+      "name": "Band Pull Apart",
+      "primaryMuscles": ["shoulders"],
+      "secondaryMuscles": ["back"],
+      "equipment": ["resistance-bands"],
+      "category": "isolation",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "band-face-pulls",
+      "name": "Band Face Pulls",
+      "primaryMuscles": ["shoulders"],
+      "secondaryMuscles": ["back"],
+      "equipment": ["resistance-bands"],
+      "category": "isolation",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "band-bicep-curl",
+      "name": "Band Bicep Curl",
+      "primaryMuscles": ["biceps"],
+      "secondaryMuscles": ["forearms"],
+      "equipment": ["resistance-bands"],
+      "category": "isolation",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "band-tricep-extension",
+      "name": "Band Tricep Extension",
+      "primaryMuscles": ["triceps"],
+      "secondaryMuscles": [],
+      "equipment": ["resistance-bands"],
+      "category": "isolation",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "band-lat-pulldown",
+      "name": "Band Lat Pulldown",
+      "primaryMuscles": ["back"],
+      "secondaryMuscles": ["biceps"],
+      "equipment": ["resistance-bands"],
+      "category": "compound",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "band-rows",
+      "name": "Band Rows",
+      "primaryMuscles": ["back"],
+      "secondaryMuscles": ["biceps"],
+      "equipment": ["resistance-bands"],
+      "category": "compound",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "band-chest-press",
+      "name": "Band Chest Press",
+      "primaryMuscles": ["chest"],
+      "secondaryMuscles": ["triceps", "shoulders"],
+      "equipment": ["resistance-bands"],
+      "category": "compound",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "band-squats",
+      "name": "Band Squats",
+      "primaryMuscles": ["quadriceps"],
+      "secondaryMuscles": ["glutes", "hamstrings"],
+      "equipment": ["resistance-bands"],
+      "category": "compound",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "band-glute-bridge",
+      "name": "Band Glute Bridge",
+      "primaryMuscles": ["glutes"],
+      "secondaryMuscles": ["hamstrings"],
+      "equipment": ["resistance-bands"],
+      "category": "isolation",
+      "difficulty": "beginner"
+    },
+    {
+      "id": "band-lateral-walk",
+      "name": "Band Lateral Walk",
+      "primaryMuscles": ["glutes"],
+      "secondaryMuscles": ["quadriceps"],
+      "equipment": ["resistance-bands"],
+      "category": "isolation",
+      "difficulty": "beginner"
     }
   ],
   "muscleGroups": [
@@ -706,7 +877,8 @@
     "calves",
     "core",
     "forearms",
-    "traps"
+    "traps",
+    "cardio"
   ],
   "equipmentList": [
     { "id": "barbell", "name": "Barbell" },
@@ -735,6 +907,13 @@
     { "id": "hip-abductor-machine", "name": "Hip Abductor Machine" },
     { "id": "hip-adductor-machine", "name": "Hip Adductor Machine" },
     { "id": "assisted-pullup-machine", "name": "Assisted Pull-up Machine" },
-    { "id": "bodyweight", "name": "Bodyweight (No Equipment)" }
+    { "id": "bodyweight", "name": "Bodyweight (No Equipment)" },
+    { "id": "treadmill", "name": "Treadmill" },
+    { "id": "exercise-bike", "name": "Exercise Bike" },
+    { "id": "recumbent-bike", "name": "Recumbent Bike" },
+    { "id": "jump-rope", "name": "Jump Rope" },
+    { "id": "punching-bag", "name": "Punching Bag / Heavy Bag" },
+    { "id": "sled", "name": "Sled" },
+    { "id": "resistance-bands", "name": "Resistance Bands" }
   ]
 }

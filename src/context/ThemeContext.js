@@ -7,10 +7,16 @@ const ThemeContext = createContext();
 
 const THEME_STORAGE_KEY = '@settings_theme';
 
+// Theme modes: 'light', 'dark', 'system'
 export function ThemeProvider({ children }) {
   const systemColorScheme = useColorScheme();
-  const [isDark, setIsDark] = useState(systemColorScheme === 'dark');
+  const [themeMode, setThemeMode] = useState('system'); // 'light', 'dark', or 'system'
   const [isLoading, setIsLoading] = useState(true);
+
+  // Compute actual dark/light based on mode and system preference
+  const isDark = themeMode === 'system'
+    ? systemColorScheme === 'dark'
+    : themeMode === 'dark';
 
   useEffect(() => {
     loadThemePreference();
@@ -20,7 +26,10 @@ export function ThemeProvider({ children }) {
     try {
       const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
       if (savedTheme !== null) {
-        setIsDark(savedTheme === 'dark');
+        // Handle legacy values ('dark'/'light' without 'system')
+        if (savedTheme === 'dark' || savedTheme === 'light' || savedTheme === 'system') {
+          setThemeMode(savedTheme);
+        }
       }
     } catch (error) {
       console.error('Failed to load theme preference:', error);
@@ -29,20 +38,26 @@ export function ThemeProvider({ children }) {
     }
   };
 
-  const toggleTheme = async () => {
-    const newTheme = !isDark;
-    setIsDark(newTheme);
+  const setTheme = async (mode) => {
+    setThemeMode(mode);
     try {
-      await AsyncStorage.setItem(THEME_STORAGE_KEY, newTheme ? 'dark' : 'light');
+      await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
     } catch (error) {
       console.error('Failed to save theme preference:', error);
     }
   };
 
+  // Legacy toggle for backwards compatibility
+  const toggleTheme = () => {
+    setTheme(isDark ? 'light' : 'dark');
+  };
+
   const theme = {
     isDark,
+    themeMode,
     colors: isDark ? colors.dark : colors.light,
     toggleTheme,
+    setTheme,
   };
 
   if (isLoading) {

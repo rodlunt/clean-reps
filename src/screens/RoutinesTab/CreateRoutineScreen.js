@@ -597,6 +597,7 @@ const styles = StyleSheet.create({
   muscleFilter: {
     paddingHorizontal: spacing.lg,
     marginBottom: spacing.md,
+    maxHeight: 44,
   },
   muscleChip: {
     paddingVertical: spacing.sm,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useTheme } from '../../context/ThemeContext';
@@ -9,7 +9,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { spacing, fontSize, borderRadius } from '../../theme';
 
 export default function SettingsScreen({ navigation }) {
-  const { colors, isDark, toggleTheme } = useTheme();
+  const { colors, isDark, themeMode, setTheme } = useTheme();
   const { gymProfiles, activeProfileId, setActiveProfile } = useGymProfile();
   const { routines, workoutHistory, personalBests } = useWorkout();
   const { units, toggleUnits } = useSettings();
@@ -68,16 +68,28 @@ export default function SettingsScreen({ navigation }) {
         <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
           APPEARANCE
         </Text>
-        <View style={[styles.settingRow, { backgroundColor: colors.card }]}>
-          <Text style={[styles.settingLabel, { color: colors.text }]}>
-            Dark Mode
-          </Text>
-          <Switch
-            value={isDark}
-            onValueChange={toggleTheme}
-            trackColor={{ false: colors.border, true: colors.primary }}
-            thumbColor="#FFFFFF"
-          />
+        <View style={[styles.themeSelector, { backgroundColor: colors.card }]}>
+          {[
+            { key: 'light', label: 'Light' },
+            { key: 'dark', label: 'Dark' },
+            { key: 'system', label: 'System' },
+          ].map((option) => (
+            <TouchableOpacity
+              key={option.key}
+              style={[
+                styles.themeOption,
+                themeMode === option.key && { backgroundColor: colors.primary },
+              ]}
+              onPress={() => setTheme(option.key)}
+            >
+              <Text style={[
+                styles.themeOptionText,
+                { color: themeMode === option.key ? '#FFFFFF' : colors.text },
+              ]}>
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
 
@@ -207,13 +219,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.sm,
     marginLeft: spacing.sm,
     marginRight: spacing.sm,
   },
   sectionTitle: {
     fontSize: fontSize.xs,
     fontWeight: '600',
+    marginBottom: spacing.sm,
+    marginLeft: spacing.sm,
   },
   addLink: {
     fontSize: fontSize.sm,
@@ -289,5 +302,20 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     textAlign: 'center',
     marginTop: spacing.xs,
+  },
+  themeSelector: {
+    flexDirection: 'row',
+    borderRadius: borderRadius.lg,
+    padding: spacing.xs,
+  },
+  themeOption: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+    borderRadius: borderRadius.md,
+  },
+  themeOptionText: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
   },
 });
