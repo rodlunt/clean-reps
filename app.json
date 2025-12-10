@@ -22,7 +22,8 @@
         "backgroundColor": "#14B8A6"
       },
       "package": "com.cleanreps.app",
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "kotlinVersion": "2.0.21"
     },
     "web": {
       "favicon": "./assets/favicon.png"
