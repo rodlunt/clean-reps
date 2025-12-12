@@ -2,6 +2,7 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, fontSize, borderRadius } from '../../theme';
+import { shadowsLight, shadowsDark } from '../../theme/colors';
 
 export default function Button({
   title,
@@ -12,7 +13,8 @@ export default function Button({
   loading = false,
   style,
 }) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  const shadowSet = isDark ? shadowsDark : shadowsLight;
 
   const getBackgroundColor = () => {
     if (disabled) return colors.border;
@@ -73,6 +75,11 @@ export default function Button({
     }
   };
 
+  const getShadow = () => {
+    if (disabled || variant === 'outline') return {};
+    return shadowSet.sm;
+  };
+
   return (
     <TouchableOpacity
       style={[
@@ -83,6 +90,7 @@ export default function Button({
           borderColor: variant === 'outline' ? colors.primary : 'transparent',
           borderWidth: variant === 'outline' ? 2 : 0,
         },
+        getShadow(),
         style,
       ]}
       onPress={onPress}

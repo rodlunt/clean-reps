@@ -7,7 +7,12 @@
       "Bash(npm uninstall:*)",
       "Bash(npx eas-cli:*)",
       "Bash(npx expo install:*)",
-      "Bash(npx expo start:*)"
+      "Bash(npx expo start:*)",
+      "Bash(npm install:*)",
+      "Bash(npx expo-doctor:*)",
+      "Bash(timeout 60 sleep:*)",
+      "Bash(timeout 30 sleep:*)",
+      "Bash(timeout 90 sleep:*)"
     ],
     "deny": [],
     "ask": []

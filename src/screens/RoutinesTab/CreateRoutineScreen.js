@@ -5,6 +5,7 @@ import { useWorkout } from '../../context/WorkoutContext';
 import { useExercises } from '../../context/ExerciseContext';
 import { useGymProfile } from '../../context/GymProfileContext';
 import { spacing, fontSize, borderRadius } from '../../theme';
+import { shadowsLight, shadowsDark } from '../../theme/colors';
 
 // Check if exercise is bodyweight-based
 const isBodyweightExercise = (exercise) => {
@@ -14,7 +15,8 @@ const isBodyweightExercise = (exercise) => {
 };
 
 export default function CreateRoutineScreen({ navigation, route }) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  const shadows = isDark ? shadowsDark : shadowsLight;
   const { addRoutine, updateRoutine, deleteRoutine } = useWorkout();
   const { muscleGroups, filterExercises } = useExercises();
   const { gymProfiles, activeProfileId } = useGymProfile();
@@ -219,7 +221,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={[styles.label, { color: colors.textSecondary }]}>Routine Name</Text>
         <TextInput
           style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
@@ -269,7 +271,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
         )}
 
         {days.map((day, dayIndex) => (
-          <View key={day.id} style={[styles.dayCard, { backgroundColor: colors.card }]}>
+          <View key={day.id} style={[styles.dayCard, { backgroundColor: colors.card }, shadows.sm]}>
             <View style={styles.dayHeader}>
               <TextInput
                 style={[styles.dayInput, { color: colors.text }]}

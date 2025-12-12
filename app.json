@@ -21,13 +21,21 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#14B8A6"
       },
-      "package": "com.cleanreps.app",
-      "edgeToEdgeEnabled": true,
-      "kotlinVersion": "2.0.21"
+      "package": "com.cleanreps.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "2.0.21"
+          }
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "aaa2b1ad-8339-4b3b-819c-023ae6fe85f8"

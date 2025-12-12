@@ -4,6 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useWorkout } from '../../context/WorkoutContext';
 import { useSettings } from '../../context/SettingsContext';
 import { spacing, fontSize, borderRadius } from '../../theme';
+import { shadowsLight, shadowsDark } from '../../theme/colors';
 
 const formatDuration = (ms) => {
   if (!ms) return '';
@@ -32,7 +33,8 @@ const calculate1RM = (weight, reps) => {
 };
 
 export default function ProgressScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  const shadows = isDark ? shadowsDark : shadowsLight;
   const { workoutHistory, personalBests, routines } = useWorkout();
   const { units, displayWeight } = useSettings();
   const [activeTab, setActiveTab] = useState('history');
@@ -86,7 +88,7 @@ export default function ProgressScreen() {
   const renderChart = () => {
     if (!selectedExercise) {
       return (
-        <View style={[styles.emptyState, { backgroundColor: colors.card }]}>
+        <View style={[styles.emptyState, { backgroundColor: colors.card }, shadows.sm]}>
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
             Select an exercise above to view your progress
           </Text>
@@ -96,7 +98,7 @@ export default function ProgressScreen() {
 
     if (exerciseHistory.length === 0) {
       return (
-        <View style={[styles.emptyState, { backgroundColor: colors.card }]}>
+        <View style={[styles.emptyState, { backgroundColor: colors.card }, shadows.sm]}>
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
             No data for {selectedExercise.name} yet
           </Text>
@@ -109,7 +111,7 @@ export default function ProgressScreen() {
     const barWidth = Math.min(40, (chartWidth - 20) / exerciseHistory.length);
 
     return (
-      <View style={[styles.chartContainer, { backgroundColor: colors.card }]}>
+      <View style={[styles.chartContainer, { backgroundColor: colors.card }, shadows.sm]}>
         <Text style={[styles.chartTitle, { color: colors.text }]}>
           Est. 1RM - {selectedExercise.name}
         </Text>
@@ -156,7 +158,7 @@ export default function ProgressScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.title, { color: colors.text }]}>Progress</Text>
 
-      <View style={[styles.segmentedControl, { backgroundColor: colors.card }]}>
+      <View style={[styles.segmentedControl, { backgroundColor: colors.card }, shadows.sm]}>
         <TouchableOpacity
           style={[
             styles.segment,
@@ -191,7 +193,7 @@ export default function ProgressScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {activeTab === 'history' ? (
           sortedHistory.length === 0 ? (
             <View style={[styles.emptyState, { backgroundColor: colors.card }]}>
@@ -206,7 +208,7 @@ export default function ProgressScreen() {
               return (
                 <View
                   key={session.id}
-                  style={[styles.historyCard, { backgroundColor: colors.card }]}
+                  style={[styles.historyCard, { backgroundColor: colors.card }, shadows.sm]}
                 >
                   <View style={styles.historyHeader}>
                     <Text style={[styles.historyDate, { color: colors.text }]}>
@@ -256,6 +258,7 @@ export default function ProgressScreen() {
                         backgroundColor: selectedExercise?.id === ex.id ? colors.primary : colors.card,
                         borderColor: colors.border,
                       },
+                      shadows.sm,
                     ]}
                     onPress={() => setSelectedExercise(ex)}
                   >

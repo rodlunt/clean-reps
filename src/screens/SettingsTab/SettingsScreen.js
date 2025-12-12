@@ -7,9 +7,11 @@ import { useGymProfile } from '../../context/GymProfileContext';
 import { useWorkout } from '../../context/WorkoutContext';
 import { useSettings } from '../../context/SettingsContext';
 import { spacing, fontSize, borderRadius } from '../../theme';
+import { shadowsLight, shadowsDark } from '../../theme/colors';
 
 export default function SettingsScreen({ navigation }) {
   const { colors, isDark, themeMode, setTheme } = useTheme();
+  const shadows = isDark ? shadowsDark : shadowsLight;
   const { gymProfiles, activeProfileId, setActiveProfile } = useGymProfile();
   const { routines, workoutHistory, personalBests } = useWorkout();
   const { units, toggleUnits } = useSettings();
@@ -61,66 +63,8 @@ export default function SettingsScreen({ navigation }) {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
       <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
-
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-          APPEARANCE
-        </Text>
-        <View style={[styles.themeSelector, { backgroundColor: colors.card }]}>
-          {[
-            { key: 'light', label: 'Light' },
-            { key: 'dark', label: 'Dark' },
-            { key: 'system', label: 'System' },
-          ].map((option) => (
-            <TouchableOpacity
-              key={option.key}
-              style={[
-                styles.themeOption,
-                themeMode === option.key && { backgroundColor: colors.primary },
-              ]}
-              onPress={() => setTheme(option.key)}
-            >
-              <Text style={[
-                styles.themeOptionText,
-                { color: themeMode === option.key ? '#FFFFFF' : colors.text },
-              ]}>
-                {option.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-          UNITS
-        </Text>
-        <TouchableOpacity
-          style={[styles.settingRow, { backgroundColor: colors.card }]}
-          onPress={toggleUnits}
-        >
-          <Text style={[styles.settingLabel, { color: colors.text }]}>
-            Weight Unit
-          </Text>
-          <View style={styles.unitToggle}>
-            <Text style={[
-              styles.unitOption,
-              { color: units === 'kg' ? colors.primary : colors.textSecondary }
-            ]}>
-              kg
-            </Text>
-            <Text style={[styles.unitSeparator, { color: colors.textSecondary }]}>/</Text>
-            <Text style={[
-              styles.unitOption,
-              { color: units === 'lbs' ? colors.primary : colors.textSecondary }
-            ]}>
-              lbs
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
@@ -150,6 +94,7 @@ export default function SettingsScreen({ navigation }) {
               style={[
                 styles.gymCard,
                 { backgroundColor: colors.card },
+                shadows.sm,
                 activeProfileId === profile.id && { borderColor: colors.primary, borderWidth: 2 },
               ]}
               onPress={() => setActiveProfile(profile.id)}
@@ -178,10 +123,68 @@ export default function SettingsScreen({ navigation }) {
 
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+          APPEARANCE
+        </Text>
+        <View style={[styles.themeSelector, { backgroundColor: colors.card }, shadows.sm]}>
+          {[
+            { key: 'light', label: 'Light' },
+            { key: 'dark', label: 'Dark' },
+            { key: 'system', label: 'System' },
+          ].map((option) => (
+            <TouchableOpacity
+              key={option.key}
+              style={[
+                styles.themeOption,
+                themeMode === option.key && { backgroundColor: colors.primary },
+              ]}
+              onPress={() => setTheme(option.key)}
+            >
+              <Text style={[
+                styles.themeOptionText,
+                { color: themeMode === option.key ? '#FFFFFF' : colors.text },
+              ]}>
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+          UNITS
+        </Text>
+        <TouchableOpacity
+          style={[styles.settingRow, { backgroundColor: colors.card }, shadows.sm]}
+          onPress={toggleUnits}
+        >
+          <Text style={[styles.settingLabel, { color: colors.text }]}>
+            Weight Unit
+          </Text>
+          <View style={styles.unitToggle}>
+            <Text style={[
+              styles.unitOption,
+              { color: units === 'kg' ? colors.primary : colors.textSecondary }
+            ]}>
+              kg
+            </Text>
+            <Text style={[styles.unitSeparator, { color: colors.textSecondary }]}>/</Text>
+            <Text style={[
+              styles.unitOption,
+              { color: units === 'lbs' ? colors.primary : colors.textSecondary }
+            ]}>
+              lbs
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
           DATA
         </Text>
         <TouchableOpacity
-          style={[styles.settingRow, { backgroundColor: colors.card }]}
+          style={[styles.settingRow, { backgroundColor: colors.card }, shadows.sm]}
           onPress={exportData}
           disabled={isExporting}
         >

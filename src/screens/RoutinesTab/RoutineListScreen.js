@@ -3,10 +3,12 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { useTheme } from '../../context/ThemeContext';
 import { useWorkout } from '../../context/WorkoutContext';
 import { spacing, fontSize, borderRadius } from '../../theme';
+import { shadowsLight, shadowsDark } from '../../theme/colors';
 import { STARTER_ROUTINES } from '../../data/starterRoutines';
 
 export default function RoutineListScreen({ navigation }) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  const shadows = isDark ? shadowsDark : shadowsLight;
   const { routines, addRoutine } = useWorkout();
 
   const useTemplate = async (template) => {
@@ -29,7 +31,7 @@ export default function RoutineListScreen({ navigation }) {
           <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
       </View>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {routines.length > 0 && (
           <>
             <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
@@ -38,7 +40,7 @@ export default function RoutineListScreen({ navigation }) {
             {routines.map(routine => (
               <TouchableOpacity
                 key={routine.id}
-                style={[styles.routineCard, { backgroundColor: colors.card }]}
+                style={[styles.routineCard, { backgroundColor: colors.card }, shadows.sm]}
                 onPress={() => navigation.navigate('CreateRoutine', { editRoutine: routine })}
               >
                 <Text style={[styles.routineName, { color: colors.text }]}>
@@ -61,7 +63,7 @@ export default function RoutineListScreen({ navigation }) {
         {STARTER_ROUTINES.map(template => (
           <TouchableOpacity
             key={template.id}
-            style={[styles.templateCard, { backgroundColor: colors.card, borderColor: colors.primary }]}
+            style={[styles.templateCard, { backgroundColor: colors.card, borderColor: colors.primary }, shadows.sm]}
             onPress={() => useTemplate(template)}
           >
             <View style={styles.templateHeader}>

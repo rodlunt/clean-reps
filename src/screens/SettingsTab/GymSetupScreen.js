@@ -78,7 +78,7 @@ export default function GymSetupScreen({ navigation, route }) {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={[styles.label, { color: colors.textSecondary }]}>Gym Name</Text>
         <TextInput
           style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}

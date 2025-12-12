@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useSettings } from '../../context/SettingsContext';
 import { spacing, fontSize, borderRadius } from '../../theme';
+import { shadowsLight, shadowsDark } from '../../theme/colors';
 import Button from '../../components/common/Button';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -78,7 +79,8 @@ const ConfettiParticle = ({ delay, color }) => {
 };
 
 export default function WorkoutSummaryScreen({ navigation, route }) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  const shadows = isDark ? shadowsDark : shadowsLight;
   const { units, displayWeight } = useSettings();
   const { exerciseCount = 0, totalSets = 0, totalVolume = 0, newPRs = 0, duration = 0 } = route.params || {};
 
@@ -159,7 +161,7 @@ export default function WorkoutSummaryScreen({ navigation, route }) {
           </Animated.View>
         )}
 
-        <View style={[styles.statsCard, { backgroundColor: colors.card }]}>
+        <View style={[styles.statsCard, { backgroundColor: colors.card }, shadows.md]}>
           <View style={styles.statRow}>
             <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Duration</Text>
             <Text style={[styles.statValue, { color: colors.text }]}>{formatDuration(duration)}</Text>

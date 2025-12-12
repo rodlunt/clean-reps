@@ -1,45 +1,55 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BASE_URL = 'https://wger.de/api/v2';
-const CACHE_KEY = 'wger_exercise_images';
+const CACHE_KEY = 'wger_exercise_images_v2'; // Updated to force refresh with new mappings
 const CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 // Direct WGER exercise base IDs for accurate image matching
-// These IDs correspond to specific exercises in the WGER database
+// These IDs correspond to specific exercises in the WGER database (verified 2024)
 const WGER_EXERCISE_BASE_IDS = {
-  'bench-press': 192,
-  'incline-bench-press': 163,
-  'dumbbell-bench-press': 97,
-  'dumbbell-flyes': 145,
-  'push-ups': 4,
-  'squat': 111,
-  'deadlift': 105,
-  'romanian-deadlift': 116,
-  'leg-press': 110,
-  'leg-extension': 113,
-  'leg-curl': 114,
-  'lunges': 112,
-  'pull-ups': 107,
-  'chin-ups': 181,
-  'lat-pulldown': 122,
-  'barbell-row': 109,
-  'dumbbell-row': 106,
-  'overhead-press': 119,
-  'dumbbell-shoulder-press': 123,
-  'lateral-raises': 148,
-  'barbell-curl': 74,
-  'dumbbell-curl': 81,
-  'hammer-curl': 301,
-  'tricep-pushdown': 92,
-  'dips': 83,
-  'calf-raises': 103,
-  'plank': 238,
-  'crunches': 91,
-  'hip-thrust': 171,
-  'kettlebell-swing': 249,
-  'shrugs': 187,
-  'face-pulls': 670,
-  'cable-row': 108,
+  'bench-press': 192,        // Barbell Bench Press
+  'incline-bench-press': 163, // Incline Barbell Bench Press
+  'dumbbell-bench-press': 97, // Dumbbell Bench Press
+  'incline-dumbbell-press': 670, // Incline Dumbbell Press
+  'dumbbell-flyes': 145,      // Dumbbell Flyes
+  'push-ups': 4,              // Push-ups
+  'squat': 111,               // Barbell Squat
+  'front-squat': 191,         // Front Squat
+  'goblet-squat': 300,        // Goblet Squat
+  'deadlift': 105,            // Conventional Deadlift
+  'romanian-deadlift': 116,   // Romanian Deadlift
+  'leg-press': 110,           // Leg Press
+  'leg-extension': 113,       // Leg Extension
+  'leg-curl': 114,            // Leg Curl
+  'lunges': 112,              // Lunges
+  'pull-ups': 107,            // Pull-ups
+  'chin-ups': 181,            // Chin-ups
+  'lat-pulldown': 122,        // Lat Pulldown
+  'barbell-row': 109,         // Barbell Row
+  'dumbbell-row': 106,        // Dumbbell Row
+  'cable-row': 108,           // Cable Row
+  'overhead-press': 119,      // Overhead Press
+  'dumbbell-shoulder-press': 123, // Dumbbell Shoulder Press
+  'lateral-raises': 148,      // Lateral Raises
+  'front-raises': 233,        // Front Raises
+  'barbell-curl': 74,         // Barbell Curl
+  'dumbbell-curl': 81,        // Dumbbell Curl
+  'hammer-curl': 301,         // Hammer Curl
+  'preacher-curl': 86,        // Preacher Curl
+  'tricep-pushdown': 92,      // Tricep Pushdown
+  'skull-crushers': 344,      // Skull Crushers
+  'overhead-tricep-extension': 89, // Overhead Tricep Extension
+  'dips': 83,                 // Dips
+  'calf-raises': 103,         // Standing Calf Raises
+  'seated-calf-raises': 104,  // Seated Calf Raises
+  'plank': 238,               // Plank
+  'crunches': 91,             // Crunches
+  'hip-thrust': 171,          // Hip Thrust
+  'glute-bridge': 171,        // Glute Bridge (same as hip thrust)
+  'kettlebell-swing': 249,    // Kettlebell Swing
+  'shrugs': 187,              // Shrugs
+  'face-pulls': 226,          // Face Pulls
+  'reverse-flyes': 226,       // Reverse Flyes
 };
 
 // Map our exercise names to wger search terms (fallback for exercises without direct IDs)

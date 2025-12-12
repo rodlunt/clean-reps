@@ -1,7 +1,7 @@
 export const colors = {
   light: {
     primary: '#14B8A6', // Teal accent
-    background: '#FFFFFF',
+    background: '#FAFBFC',
     card: '#F3F4F6',
     text: '#1F2937',
     textSecondary: '#6B7280',
@@ -10,13 +10,13 @@ export const colors = {
     success: '#10B981',
     error: '#EF4444',
     warning: '#F59E0B',
-    // Super subtle gradient pairs (barely perceptible ~2% difference)
-    cardGradient: ['#F5F6F8', '#F1F2F4'],
-    backgroundGradient: ['#FFFFFF', '#FCFCFD'],
+    // Gradient pairs (~17% difference for stronger texture)
+    cardGradient: ['#F7F8FA', '#E0E2E8'],
+    backgroundGradient: ['#FFFFFF', '#EAECF0'],
   },
   dark: {
     primary: '#14B8A6', // Teal accent (same in both modes)
-    background: '#1F2937',
+    background: '#1A232F',
     card: '#374151',
     text: '#F9FAFB',
     textSecondary: '#9CA3AF',
@@ -25,9 +25,9 @@ export const colors = {
     success: '#10B981',
     error: '#EF4444',
     warning: '#F59E0B',
-    // Super subtle gradient pairs (barely perceptible ~2% difference)
-    cardGradient: ['#3A4556', '#343E4D'],
-    backgroundGradient: ['#212A38', '#1D2533'],
+    // Gradient pairs (~17% difference for stronger texture)
+    cardGradient: ['#424F61', '#2D3844'],
+    backgroundGradient: ['#283545', '#161E28'],
   },
 };
 

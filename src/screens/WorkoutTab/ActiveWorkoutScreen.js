@@ -5,6 +5,7 @@ import { useWorkout } from '../../context/WorkoutContext';
 import { useExercises } from '../../context/ExerciseContext';
 import { useSettings } from '../../context/SettingsContext';
 import { spacing, fontSize, borderRadius } from '../../theme';
+import { shadowsLight, shadowsDark } from '../../theme/colors';
 import WeightRoller from '../../components/common/WeightRoller';
 import RepsRoller from '../../components/common/RepsRoller';
 
@@ -21,7 +22,8 @@ const calculate1RM = (weight, reps) => {
 };
 
 export default function ActiveWorkoutScreen({ navigation, route }) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  const shadows = isDark ? shadowsDark : shadowsLight;
   const { workoutHistory, saveWorkoutSession, personalBests } = useWorkout();
   const { getExerciseById, exerciseImages, getExerciseImage } = useExercises();
   const { units, displayWeight, toStorageWeight } = useSettings();
@@ -257,7 +259,7 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
         )}
       </View>
 
-      <ScrollView style={styles.setsContainer}>
+      <ScrollView style={styles.setsContainer} showsVerticalScrollIndicator={false}>
         {isProgressionReady && (
           <Animated.View
             style={[
@@ -279,6 +281,7 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
               style={[
                 styles.setRow,
                 { backgroundColor: colors.card },
+                shadows.sm,
                 shouldPulse && { transform: [{ scale: pulseAnim }] }
               ]}
             >
@@ -315,7 +318,7 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
 
       <View style={styles.navigation}>
         <TouchableOpacity
-          style={[styles.navButton, { backgroundColor: colors.card, opacity: currentExerciseIndex === 0 ? 0.5 : 1 }]}
+          style={[styles.navButton, { backgroundColor: colors.card, opacity: currentExerciseIndex === 0 ? 0.5 : 1 }, shadows.sm]}
           onPress={goPrevious}
           disabled={currentExerciseIndex === 0}
         >
@@ -324,14 +327,14 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
 
         {currentExerciseIndex === workoutData.length - 1 ? (
           <TouchableOpacity
-            style={[styles.navButton, { backgroundColor: colors.primary }]}
+            style={[styles.navButton, { backgroundColor: colors.primary }, shadows.md]}
             onPress={finishWorkout}
           >
             <Text style={[styles.navButtonText, { color: '#FFFFFF' }]}>Finish</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            style={[styles.navButton, { backgroundColor: colors.primary }]}
+            style={[styles.navButton, { backgroundColor: colors.primary }, shadows.md]}
             onPress={goNext}
           >
             <Text style={[styles.navButtonText, { color: '#FFFFFF' }]}>Next</Text>
