@@ -1,134 +1,148 @@
 # Clean Reps
 
-A modern, minimalist workout tracking app built with React Native and Expo. Track your workouts, create custom routines, and monitor your progress with a clean, intuitive interface.
+A no-nonsense workout tracker. No accounts, no subscriptions, no social features. Just log your lifts and get on with your day.
+
+## Why I built this
+
+I got tired of fitness apps that want to be everything - social networks, meal planners, AI coaches, motivation machines. I just needed to remember what weight I lifted last week.
+
+Clean Reps does one thing: tracks your workouts. That's it.
 
 ## Features
 
-- **Workout Tracking** - Log sets, reps, and weights during your workouts with an intuitive interface
-- **Custom Routines** - Create personalized workout routines with multiple days and exercises
-- **Gym Profiles** - Set up different gym profiles with available equipment to filter exercises accordingly
-- **Progress Tracking** - View your workout history and personal bests over time
-- **Exercise Database** - Access a comprehensive database of exercises with muscle group targeting
-- **Theme Support** - Choose between light mode, dark mode, or follow your device settings
-- **Unit Preferences** - Switch between kg and lbs based on your preference
-- **Data Export** - Export your workout data for backup or analysis
+**The basics**
+- Log sets, reps, and weights
+- Build routines that match how you train
+- View your workout history
 
-## Screenshots
+**Multiple gym setups**
+- Set up different gym profiles (home gym, work gym, hotel, etc.)
+- Equipment-based exercise filtering - only see exercises you can actually do
 
-<!-- Add screenshots here -->
+**Progress tracking**
+- Personal records flagged automatically
+- Estimated 1RM charts per exercise
+- Weekly volume stats
+- 4-week trend view
+
+**Smart scheduling**
+- Remembers where you're at in your routine
+- Knows which day is next
+- Skip ahead if you've missed sessions
+
+**Works how you want**
+- kg or lbs
+- Dark mode
+- Works completely offline
+
+**What's NOT included**
+- No accounts or sign-ups
+- No subscriptions
+- No ads
+- No social features
+- No data collection
 
 ## Tech Stack
 
-- **Framework**: React Native with Expo SDK 54
-- **Navigation**: React Navigation v7
-- **State Management**: React Context API
-- **Storage**: AsyncStorage for local data persistence
-- **Styling**: React Native StyleSheet with custom theming
+- React Native + Expo SDK 52
+- React Navigation v6
+- AsyncStorage for local persistence
+- Context API for state
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v18 or higher recommended)
-- npm or yarn
-- Expo CLI
-- iOS Simulator (Mac only) or Android Emulator, or Expo Go app on your device
+- Node.js 18+
+- Android Studio (for Android builds)
+- Xcode (for iOS, Mac only)
 
-### Installation
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/yourusername/clean-reps.git
-   cd clean-reps
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-
-   ```bash
-   npx expo start
-   ```
-
-4. Run on your preferred platform:
-   - Press `a` for Android emulator
-   - Press `i` for iOS simulator
-   - Scan the QR code with Expo Go on your device
-
-### Building for Production
-
-Create a development build using EAS:
+### Development
 
 ```bash
-npx eas-cli build --profile development --platform android
+# Install dependencies
+npm install
+
+# Start Expo dev server
+npx expo start
+
+# Run on Android
+npx expo run:android
+
+# Run on iOS
+npx expo run:ios
 ```
 
-Or for iOS:
+### Building APK/AAB locally
 
 ```bash
-npx eas-cli build --profile development --platform ios
+# Set JAVA_HOME to Android Studio's JDK
+# Windows PowerShell:
+$env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'
+
+# Build debug APK
+cd android && ./gradlew assembleDebug
+
+# Build release APK (needs keystore setup)
+cd android && ./gradlew assembleRelease
+
+# Build AAB for Play Store
+cd android && ./gradlew bundleRelease
+```
+
+Output locations:
+- Debug APK: `android/app/build/outputs/apk/debug/app-debug.apk`
+- Release APK: `android/app/build/outputs/apk/release/app-release.apk`
+- AAB: `android/app/build/outputs/bundle/release/app-release.aab`
+
+### Release signing
+
+Create `android/keystore.properties`:
+```properties
+storeFile=release.keystore
+storePassword=your_password
+keyAlias=your_alias
+keyPassword=your_password
+```
+
+Generate a keystore:
+```bash
+keytool -genkeypair -v -storetype PKCS12 -keystore android/app/release.keystore -alias your_alias -keyalg RSA -keysize 2048 -validity 9125
 ```
 
 ## Project Structure
 
-```text
+```
 src/
-├── components/          # Reusable UI components
-│   ├── common/         # Generic components (Button, Card, Input, etc.)
-│   └── AnimatedSplashScreen.js
-├── context/            # React Context providers
-│   ├── ThemeContext.js
-│   ├── WorkoutContext.js
-│   ├── ExerciseContext.js
-│   ├── GymProfileContext.js
-│   └── SettingsContext.js
-├── data/               # Static data and exercise database
-├── navigation/         # Navigation configuration
-│   ├── TabNavigator.js
-│   └── *Stack.js       # Stack navigators
-├── screens/            # App screens organized by tab
-│   ├── WorkoutTab/
-│   ├── RoutinesTab/
-│   ├── ProgressTab/
-│   └── SettingsTab/
-├── services/           # API and utility services
-│   ├── storage.js
-│   ├── calculations.js
-│   └── wgerApi.js
-└── theme/              # Theme configuration
-    ├── colors.js
-    ├── spacing.js
-    └── index.js
+├── components/       # UI components
+├── context/          # React Context (Theme, Workout, Settings, etc.)
+├── data/             # Static data, starter routines
+├── navigation/       # React Navigation setup
+├── screens/          # App screens by tab
+├── services/         # Storage, API, calculations
+└── theme/            # Colors, spacing, typography
 ```
 
-## Configuration
+## E2E Testing
 
-The app can be configured through the following files:
+Uses Detox for end-to-end testing:
 
-- `app.json` - Expo configuration (app name, icons, splash screen)
-- `src/theme/colors.js` - Color palette for light and dark themes
-- `src/theme/spacing.js` - Spacing and sizing constants
+```bash
+# Run tests on connected device
+npm run test:e2e
 
-## Contributing
+# Run tests with debug build
+npm run test:e2e:debug
+```
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## Privacy
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+All data stays on your device. No accounts, no servers, no analytics. See `store-listing/privacy-policy.md` for the full policy.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT
 
 ## Acknowledgments
 
-- Exercise data sourced from [wger Workout Manager](https://wger.de/)
-- Icons and design inspiration from modern fitness apps
+Exercise data from [wger Workout Manager](https://wger.de/)
