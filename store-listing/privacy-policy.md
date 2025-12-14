@@ -2,40 +2,44 @@
 
 **Last updated: December 2024**
 
-## I don't want your data
+## Summary
 
-Seriously. I built this app for myself and decided to share it. I have no interest in collecting, storing, or selling your information. I don't have a server. I don't have a database of users. I don't even know you downloaded this app.
+Clean Reps does not collect, store, or transmit any personal data. All information entered into the app stays on your device.
 
-## What happens with your workout data
+## What data the app uses
 
-Everything you enter - exercises, sets, reps, weights, routines - stays on your phone. It's stored locally using your device's storage. It never gets sent anywhere. I couldn't access it even if I wanted to.
+Everything entered into Clean Reps - exercises, sets, reps, weights, routines - is stored locally on your device using the device's built-in storage. This data never leaves your device and is not accessible to anyone else.
 
-## What the app doesn't do
+## What the app does NOT do
 
-- Doesn't require an account
-- Doesn't collect personal information
-- Doesn't track your location
-- Doesn't use analytics or tracking
-- Doesn't phone home to any server
-- Doesn't contain ads or ad tracking
-- Doesn't share anything with anyone
+- Does not require an account or sign-up
+- Does not collect personal information
+- Does not track location
+- Does not use analytics or tracking services
+- Does not connect to any servers
+- Does not contain ads or ad tracking
+- Does not share data with third parties
 
-## Third-party stuff
+## Third-party services
 
-The app can look up exercises from the Wger fitness database (a free, public exercise API). When you search for exercises, that search query goes to their servers. No personal data is attached - it's just looking up exercise names and descriptions.
+Clean Reps can look up exercises from the Wger fitness database, a free public exercise API. When searching for exercises, only the search query is sent to retrieve exercise names and descriptions. No personal data is included in these requests.
 
-## Deleting your data
+## Data deletion
 
-Your data is yours. It lives on your phone. To delete it:
-- Clear the app's data in your phone's settings, or
-- Just uninstall the app
+All data belongs to the user and is stored locally on their device. To delete it:
+- Clear the app's data in the device settings, or
+- Uninstall the app
 
-That's it. There's nothing to delete on my end because I don't have anything.
+There is no remote data to delete, as no data is stored externally.
 
-## Why this policy exists
+## Children's privacy
 
-Google requires a privacy policy for Play Store apps. So here it is. The summary is: I'm not in the data business. I just wanted a simple workout app.
+Clean Reps is not directed at children under 13. The app does not knowingly collect any information from children.
+
+## Changes to this policy
+
+Any updates to this policy will be reflected in the "Last updated" date above.
 
 ## Contact
 
-Got questions? [your-email@example.com]
+For questions about this privacy policy: [your-email@example.com]

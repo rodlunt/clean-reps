@@ -8,32 +8,32 @@ No subscriptions. No social feeds. Just log your workout and get out.
 
 ## Full Description
 
-I built this app because I was tired of fitness apps that want to be everything.
+Clean Reps exists because fitness apps have become too complicated.
 
-I don't need a social feed. I don't need AI meal plans. I don't need badges, streaks, or motivational quotes. I just need to remember what weight I lifted last week.
+No social feeds. No AI meal plans. No badges, streaks, or motivational quotes. Just a simple way to remember what weight you lifted last week.
 
-Clean Reps does one thing: it tracks your workouts. That's it.
+Clean Reps does one thing: tracks your workouts. That's it.
 
 **The basics:**
 
 • Log your sets, reps, and weights
 • Build routines that match how you train
-• Check your history to see if you're progressing
+• View your workout history
 
 **Multiple gym setups**
 
-Got a home gym and a work gym? Travelling and stuck with hotel equipment? Set up different gym profiles with the equipment you have at each location. The app filters exercises based on what's actually available to you - no more scrolling past cable machines when all you've got is dumbbells.
+Got a home gym and a work gym? Travelling and stuck with hotel equipment? Set up different gym profiles with the equipment available at each location. The app filters exercises based on what's actually there - no more scrolling past cable machines when all you've got is dumbbells.
 
 **Track what matters**
 
-• Personal records get flagged automatically - you'll know when you hit a PR
-• Estimated 1RM charts show your strength gains over time
-• Weekly volume stats so you can see if you're actually putting in work
-• 4-week trend view to spot whether you're progressing or plateauing
+• Personal records get flagged automatically
+• Estimated 1RM charts show strength gains over time
+• Weekly volume stats to see if you're putting in work
+• 4-week trend view to spot progress or plateaus
 
 **Smart scheduling**
 
-The app remembers where you're at in your routine. Open the app, and it knows you're on Push Day or Leg Day or whatever's next. Missed a few days? It'll let you skip ahead.
+The app remembers where you're at in your routine. Open it up, and it knows you're on Push Day or Leg Day or whatever's next. Missed a few days? Skip ahead to any day.
 
 **Works how you want**
 
@@ -41,7 +41,7 @@ The app remembers where you're at in your routine. Open the app, and it knows yo
 • Dark mode for early mornings
 • Works completely offline - no wifi at the gym? No problem
 
-**What's NOT in the app:**
+**What's NOT included:**
 
 • No accounts or sign-ups
 • No subscriptions or premium tiers
@@ -50,15 +50,15 @@ The app remembers where you're at in your routine. Open the app, and it knows yo
 • No "upgrade to unlock" nonsense
 • No data collection
 
-Everything works from day one. There's nothing to unlock, nothing to pay for, and nothing trying to keep you scrolling.
+Everything works from day one. Nothing to unlock, nothing to pay for, nothing trying to keep you scrolling.
 
-Your workout data stays on your phone. I don't have a server. I don't want your data. I built this for myself and figured others might want the same thing.
+All workout data stays on your device. There are no servers, no user databases, no analytics. This app was built for people who just want to track their lifts and get on with their day.
 
-Open the app. Log your workout. Close the app. Get on with your day.
+Open the app. Log your workout. Close the app. Done.
 
 ---
 
-Questions? Found a bug? [your-email@example.com]
+Questions or feedback? [your-email@example.com]
 
 ## Category
 Health & Fitness
