@@ -12,9 +12,28 @@
       "Bash(npx expo-doctor:*)",
       "Bash(timeout 60 sleep:*)",
       "Bash(timeout 30 sleep:*)",
-      "Bash(timeout 90 sleep:*)"
+      "Bash(timeout 90 sleep:*)",
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "Bash(tasklist /FI 'IMAGENAME eq node.exe' /FO TABLE)",
+      "Bash(findstr:*)",
+      "Bash(powershell:*)",
+      "Bash(where:*)",
+      "Bash(dir /s /b \"C:\\Program Files\\Java\\*keytool.exe\")",
+      "Bash(dir /s /b \"C:\\Program Files\\Android\\Android Studio\\jbr\\bin\\keytool.exe\")",
+      "Bash(./gradlew assembleDebug:*)",
+      "Bash(dir:*)",
+      "Bash(explorer \"D:\\GymApp\\android\\app\\build\\outputs\\apk\\debug\")",
+      "Bash(\"C:\\Program Files\\Android\\Android Studio\\jbr\\bin\\keytool.exe\" -list -keystore \"D:\\GymApp\\android\\app\\release.keystore\" -storepass \"Cr3ps!Gym@2025#Sec\")",
+      "Bash(\"C:\\Program Files\\Android\\Android Studio\\jbr\\bin\\keytool.exe\" -list -keystore \"D:\\GymApp\\android\\app\\release.keystore\" -storepass \"cleanreps123\")",
+      "Bash(del \"D:\\GymApp\\android\\app\\release.keystore\")",
+      "Bash(\"C:\\Program Files\\Android\\Android Studio\\jbr\\bin\\keytool.exe\" -genkeypair -v -storetype PKCS12 -keystore \"D:\\GymApp\\android\\app\\release.keystore\" -alias cleanreps -keyalg RSA -keysize 2048 -validity 9125 -storepass CleanReps2025Secure -keypass CleanReps2025Secure -dname \"CN=Clean Reps, OU=Mobile, O=CleanReps, L=City, ST=State, C=US\")",
+      "Bash(\"C:\\Program Files\\Android\\Android Studio\\jbr\\bin\\keytool.exe\":*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "context7"
+  ]
 }

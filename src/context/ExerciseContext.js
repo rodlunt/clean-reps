@@ -49,6 +49,22 @@ export function ExerciseProvider({ children }) {
     setExerciseImages(prev => ({ ...prev, ...images }));
   }, [exerciseImages]);
 
+  // Refresh a specific exercise image (clear cache and re-fetch)
+  const refreshExerciseImage = useCallback(async (exerciseId) => {
+    setLoadingImages(prev => ({ ...prev, [exerciseId]: true }));
+
+    try {
+      const imageUrl = await wgerApi.refreshExerciseImage(exerciseId);
+      setExerciseImages(prev => ({ ...prev, [exerciseId]: imageUrl }));
+      return imageUrl;
+    } catch (error) {
+      console.log('Failed to refresh image:', error);
+      return null;
+    } finally {
+      setLoadingImages(prev => ({ ...prev, [exerciseId]: false }));
+    }
+  }, []);
+
   const getExerciseById = (id) => {
     return exercises.find(ex => ex.id === id);
   };
@@ -115,6 +131,7 @@ export function ExerciseProvider({ children }) {
     loadingImages,
     getExerciseImage,
     prefetchImages,
+    refreshExerciseImage,
   };
 
   return (

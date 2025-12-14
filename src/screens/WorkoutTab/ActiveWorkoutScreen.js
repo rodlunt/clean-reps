@@ -11,9 +11,9 @@ import RepsRoller from '../../components/common/RepsRoller';
 
 // Demo exercises for quick start without routine
 const DEMO_EXERCISES = [
-  { id: '1', exerciseId: '1', name: 'Bench Press', sets: 3 },
-  { id: '2', exerciseId: '2', name: 'Squat', sets: 3 },
-  { id: '3', exerciseId: '3', name: 'Deadlift', sets: 3 },
+  { id: 'bench-press', exerciseId: 'bench-press', name: 'Bench Press', sets: 3 },
+  { id: 'squat', exerciseId: 'squat', name: 'Squat', sets: 3 },
+  { id: 'deadlift', exerciseId: 'deadlift', name: 'Deadlift', sets: 3 },
 ];
 
 const calculate1RM = (weight, reps) => {
@@ -25,7 +25,7 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
   const { colors, isDark } = useTheme();
   const shadows = isDark ? shadowsDark : shadowsLight;
   const { workoutHistory, saveWorkoutSession, personalBests } = useWorkout();
-  const { getExerciseById, exerciseImages, getExerciseImage } = useExercises();
+  const { getExerciseById, exerciseImages, getExerciseImage, refreshExerciseImage, loadingImages } = useExercises();
   const { units, displayWeight, toStorageWeight } = useSettings();
   const routine = route.params?.routine;
   const day = route.params?.day;
@@ -123,6 +123,7 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
   // Get exercise image from wger.de
   const currentExerciseId = currentExercise?.exerciseId;
   const exerciseImageUrl = exerciseImages[currentExerciseId];
+  const isRefreshingImage = loadingImages[currentExerciseId];
 
   // Fetch image when modal opens or exercise changes
   useEffect(() => {
@@ -133,6 +134,13 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
       });
     }
   }, [showImageModal, currentExerciseId, exerciseImageUrl, getExerciseImage]);
+
+  // Handle refresh image
+  const handleRefreshImage = async () => {
+    if (currentExerciseId && !isRefreshingImage) {
+      await refreshExerciseImage(currentExerciseId);
+    }
+  };
 
   // Early return if no exercise data
   if (!currentExercise) {
@@ -375,7 +383,7 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
               </View>
             ) : exerciseImageUrl ? (
               <View style={styles.imageContainer}>
-                {imageLoading && (
+                {(imageLoading || isRefreshingImage) && (
                   <ActivityIndicator
                     size="large"
                     color={colors.primary}
@@ -384,11 +392,20 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
                 )}
                 <Image
                   source={{ uri: exerciseImageUrl }}
-                  style={styles.exerciseImage}
+                  style={[styles.exerciseImage, isRefreshingImage && { opacity: 0.5 }]}
                   resizeMode="contain"
                   onLoadStart={() => setImageLoading(true)}
                   onLoadEnd={() => setImageLoading(false)}
                 />
+                <TouchableOpacity
+                  style={[styles.refreshButton, { backgroundColor: colors.background }]}
+                  onPress={handleRefreshImage}
+                  disabled={isRefreshingImage}
+                >
+                  <Text style={[styles.refreshButtonText, { color: colors.primary }]}>
+                    {isRefreshingImage ? 'Refreshing...' : 'Wrong image? Tap to refresh'}
+                  </Text>
+                </TouchableOpacity>
               </View>
             ) : (
               <View style={[styles.imagePlaceholder, { backgroundColor: colors.background }]}>
@@ -593,5 +610,15 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: fontSize.md,
     fontWeight: '600',
+  },
+  refreshButton: {
+    marginTop: spacing.sm,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.md,
+  },
+  refreshButtonText: {
+    fontSize: fontSize.xs,
+    textAlign: 'center',
   },
 });

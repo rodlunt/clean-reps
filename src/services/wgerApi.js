@@ -1,152 +1,87 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system';
 
-const BASE_URL = 'https://wger.de/api/v2';
-const CACHE_KEY = 'wger_exercise_images_v2'; // Updated to force refresh with new mappings
-const CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
+const CACHE_KEY = 'wger_exercise_images_v3';
+const IMAGE_DIR = `${FileSystem.cacheDirectory}exercise-images/`;
 
-// Direct WGER exercise base IDs for accurate image matching
-// These IDs correspond to specific exercises in the WGER database (verified 2024)
-const WGER_EXERCISE_BASE_IDS = {
-  'bench-press': 192,        // Barbell Bench Press
-  'incline-bench-press': 163, // Incline Barbell Bench Press
-  'dumbbell-bench-press': 97, // Dumbbell Bench Press
-  'incline-dumbbell-press': 670, // Incline Dumbbell Press
-  'dumbbell-flyes': 145,      // Dumbbell Flyes
-  'push-ups': 4,              // Push-ups
-  'squat': 111,               // Barbell Squat
-  'front-squat': 191,         // Front Squat
-  'goblet-squat': 300,        // Goblet Squat
-  'deadlift': 105,            // Conventional Deadlift
-  'romanian-deadlift': 116,   // Romanian Deadlift
-  'leg-press': 110,           // Leg Press
-  'leg-extension': 113,       // Leg Extension
-  'leg-curl': 114,            // Leg Curl
-  'lunges': 112,              // Lunges
-  'pull-ups': 107,            // Pull-ups
-  'chin-ups': 181,            // Chin-ups
-  'lat-pulldown': 122,        // Lat Pulldown
-  'barbell-row': 109,         // Barbell Row
-  'dumbbell-row': 106,        // Dumbbell Row
-  'cable-row': 108,           // Cable Row
-  'overhead-press': 119,      // Overhead Press
-  'dumbbell-shoulder-press': 123, // Dumbbell Shoulder Press
-  'lateral-raises': 148,      // Lateral Raises
-  'front-raises': 233,        // Front Raises
-  'barbell-curl': 74,         // Barbell Curl
-  'dumbbell-curl': 81,        // Dumbbell Curl
-  'hammer-curl': 301,         // Hammer Curl
-  'preacher-curl': 86,        // Preacher Curl
-  'tricep-pushdown': 92,      // Tricep Pushdown
-  'skull-crushers': 344,      // Skull Crushers
-  'overhead-tricep-extension': 89, // Overhead Tricep Extension
-  'dips': 83,                 // Dips
-  'calf-raises': 103,         // Standing Calf Raises
-  'seated-calf-raises': 104,  // Seated Calf Raises
-  'plank': 238,               // Plank
-  'crunches': 91,             // Crunches
-  'hip-thrust': 171,          // Hip Thrust
-  'glute-bridge': 171,        // Glute Bridge (same as hip thrust)
-  'kettlebell-swing': 249,    // Kettlebell Swing
-  'shrugs': 187,              // Shrugs
-  'face-pulls': 226,          // Face Pulls
-  'reverse-flyes': 226,       // Reverse Flyes
-};
+// Hardcoded image URLs - verified working December 2024
+const EXERCISE_IMAGE_URLS = {
+  // Chest
+  'bench-press': 'https://wger.de/media/exercise-images/192/Bench-press-1.png',
+  'incline-bench-press': 'https://wger.de/media/exercise-images/41/Incline-bench-press-1.png',
+  'decline-bench-press': 'https://wger.de/media/exercise-images/100/Decline-bench-press-1.png',
+  'dumbbell-bench-press': 'https://wger.de/media/exercise-images/97/Dumbbell-bench-press-1.png',
+  'incline-dumbbell-press': 'https://wger.de/media/exercise-images/16/Incline-press-1.png',
+  'cable-crossover': 'https://wger.de/media/exercise-images/71/Cable-crossover-2.png',
+  'pec-deck-fly': 'https://wger.de/media/exercise-images/98/Butterfly-machine-2.png',
 
-// Map our exercise names to wger search terms (fallback for exercises without direct IDs)
-const EXERCISE_NAME_MAP = {
-  'bench-press': 'bench press barbell',
-  'incline-bench-press': 'incline bench press',
-  'decline-bench-press': 'decline bench press',
-  'dumbbell-bench-press': 'dumbbell bench press flat',
-  'incline-dumbbell-press': 'incline dumbbell press',
-  'decline-dumbbell-press': 'decline dumbbell press',
-  'dumbbell-flyes': 'dumbbell fly',
-  'incline-dumbbell-flyes': 'incline dumbbell fly',
-  'push-ups': 'push up',
-  'cable-crossover': 'cable fly crossover',
-  'machine-chest-press': 'machine chest press',
-  'pec-deck-fly': 'pec deck butterfly',
-  'squat': 'barbell squat',
-  'front-squat': 'front squat barbell',
-  'goblet-squat': 'goblet squat dumbbell',
-  'leg-press': 'leg press machine',
-  'hack-squat': 'hack squat machine',
-  'leg-extension': 'leg extension machine',
-  'lunges': 'lunge bodyweight',
-  'dumbbell-lunges': 'lunge dumbbell',
-  'deadlift': 'deadlift barbell',
-  'romanian-deadlift': 'romanian deadlift stiff leg',
-  'dumbbell-romanian-deadlift': 'romanian deadlift dumbbell',
-  'leg-curl': 'leg curl lying',
-  'pull-ups': 'pull up',
-  'chin-ups': 'chin up',
-  'assisted-pull-ups': 'assisted pull up',
-  'lat-pulldown': 'lat pulldown cable',
-  'machine-lat-pulldown': 'lat pulldown machine',
-  'barbell-row': 'bent over barbell row',
-  'dumbbell-row': 'one arm dumbbell row',
-  'cable-row': 'seated cable row',
-  't-bar-row': 't-bar row',
-  'face-pulls': 'face pull cable',
-  'overhead-press': 'military press overhead',
-  'dumbbell-shoulder-press': 'dumbbell shoulder press seated',
-  'machine-shoulder-press': 'machine shoulder press',
-  'lateral-raises': 'lateral raise dumbbell',
-  'front-raises': 'front raise dumbbell',
-  'reverse-flyes': 'reverse fly rear delt',
-  'barbell-curl': 'barbell bicep curl',
-  'dumbbell-curl': 'dumbbell bicep curl',
-  'hammer-curl': 'hammer curl dumbbell',
-  'preacher-curl': 'preacher curl',
-  'dumbbell-preacher-curl': 'preacher curl dumbbell',
-  'ez-bar-curl': 'ez bar curl bicep',
-  'cable-curl': 'cable bicep curl',
-  'tricep-pushdown': 'tricep pushdown cable',
-  'skull-crushers': 'skull crusher lying tricep',
-  'overhead-tricep-extension': 'overhead tricep extension',
-  'dips': 'dip parallel bars tricep',
-  'close-grip-bench-press': 'close grip bench press',
-  'calf-raises': 'standing calf raise',
-  'seated-calf-raises': 'seated calf raise machine',
-  'hip-thrust': 'barbell hip thrust glute',
-  'glute-bridge': 'glute bridge',
-  'hip-abduction': 'hip abduction machine',
-  'hip-adduction': 'hip adduction machine',
-  'cable-kickback': 'cable glute kickback',
-  'plank': 'plank core',
-  'crunches': 'crunch abdominal',
-  'decline-situps': 'decline sit up',
-  'decline-crunches': 'decline crunch',
-  'decline-russian-twist': 'russian twist decline',
-  'hanging-leg-raises': 'hanging leg raise',
-  'cable-crunch': 'cable crunch kneeling',
-  'russian-twist': 'russian twist',
-  'shrugs': 'dumbbell shrug',
-  'barbell-shrugs': 'barbell shrug',
-  'wrist-curls': 'wrist curl forearm',
-  'farmers-walk': 'farmer walk carry',
-  'kettlebell-swing': 'kettlebell swing',
-  'kettlebell-goblet-squat': 'goblet squat kettlebell',
-  'smith-machine-bench-press': 'smith machine bench press',
-  'smith-machine-incline-press': 'smith machine incline press',
-  'smith-machine-squat': 'smith machine squat',
-  'smith-machine-shoulder-press': 'smith machine shoulder press',
+  // Back
+  'deadlift': 'https://wger.de/media/exercise-images/161/Dead-lifts-2.png',
+  'chin-ups': 'https://wger.de/media/exercise-images/181/Chin-ups-2.png',
+  'barbell-row': 'https://wger.de/media/exercise-images/109/Barbell-rear-delt-row-1.png',
+  't-bar-row': 'https://wger.de/media/exercise-images/106/T-bar-row-1.png',
+  'cable-row': 'https://wger.de/media/exercise-images/143/Cable-seated-rows-2.png',
+
+  // Legs
+  'squat': 'https://wger.de/media/exercise-images/111/Squats-1.png',
+  'front-squat': 'https://wger.de/media/exercise-images/191/Front-squat-1-857x1024.png',
+  'hack-squat': 'https://wger.de/media/exercise-images/130/Narrow-stance-hack-squats-1-1024x721.png',
+  'lunges': 'https://wger.de/media/exercise-images/113/Walking-lunges-1.png',
+  'dumbbell-lunges': 'https://wger.de/media/exercise-images/113/Walking-lunges-1.png',
+  'leg-curl': 'https://wger.de/media/exercise-images/154/lying-leg-curl-machine-large-1.png',
+  'romanian-deadlift': 'https://wger.de/media/exercise-images/116/Good-mornings-2.png',
+
+  // Shoulders
+  'overhead-press': 'https://wger.de/media/exercise-images/119/seated-barbell-shoulder-press-large-1.png',
+  'dumbbell-shoulder-press': 'https://wger.de/media/exercise-images/123/dumbbell-shoulder-press-large-1.png',
+  'lateral-raises': 'https://wger.de/media/exercise-images/148/lateral-dumbbell-raises-large-2.png',
+  'machine-shoulder-press': 'https://wger.de/media/exercise-images/53/Shoulder-press-machine-2.png',
+
+  // Arms - Biceps
+  'barbell-curl': 'https://wger.de/media/exercise-images/74/Bicep-curls-1.png',
+  'dumbbell-curl': 'https://wger.de/media/exercise-images/81/Biceps-curl-1.png',
+  'hammer-curl': 'https://wger.de/media/exercise-images/86/Bicep-hammer-curl-1.png',
+  'preacher-curl': 'https://wger.de/media/exercise-images/193/Preacher-curl-3-1.png',
+  'ez-bar-curl': 'https://wger.de/media/exercise-images/129/Standing-biceps-curl-1.png',
+
+  // Arms - Triceps
+  'skull-crushers': 'https://wger.de/media/exercise-images/84/Lying-close-grip-triceps-press-to-chin-1.png',
+  'dips': 'https://wger.de/media/exercise-images/83/Bench-dips-1.png',
+  'close-grip-bench-press': 'https://wger.de/media/exercise-images/61/Close-grip-bench-press-1.png',
+
+  // Core
+  'crunches': 'https://wger.de/media/exercise-images/91/Crunches-1.png',
+  'decline-crunches': 'https://wger.de/media/exercise-images/93/Decline-crunch-1.png',
+  'hanging-leg-raises': 'https://wger.de/media/exercise-images/125/Leg-raises-2.png',
+
+  // Other
+  'shrugs': 'https://wger.de/media/exercise-images/151/Dumbbell-shrugs-2.png',
+  'barbell-shrugs': 'https://wger.de/media/exercise-images/150/Barbell-shrugs-1.png',
 };
 
 class WgerApiService {
   constructor() {
-    this.imageCache = {};
+    this.localPathCache = {}; // Maps exerciseId -> local file path
+    this.initializeDirectory();
     this.loadCache();
+  }
+
+  async initializeDirectory() {
+    try {
+      const dirInfo = await FileSystem.getInfoAsync(IMAGE_DIR);
+      if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(IMAGE_DIR, { intermediates: true });
+      }
+    } catch (error) {
+      console.log('Failed to create image directory:', error);
+    }
   }
 
   async loadCache() {
     try {
       const cached = await AsyncStorage.getItem(CACHE_KEY);
       if (cached) {
-        const { data, timestamp } = JSON.parse(cached);
-        if (Date.now() - timestamp < CACHE_EXPIRY) {
-          this.imageCache = data;
-        }
+        this.localPathCache = JSON.parse(cached);
       }
     } catch (error) {
       console.log('Failed to load image cache:', error);
@@ -155,143 +90,95 @@ class WgerApiService {
 
   async saveCache() {
     try {
-      await AsyncStorage.setItem(CACHE_KEY, JSON.stringify({
-        data: this.imageCache,
-        timestamp: Date.now(),
-      }));
+      await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(this.localPathCache));
     } catch (error) {
       console.log('Failed to save image cache:', error);
     }
   }
 
-  async searchExercise(searchTerm) {
-    try {
-      // Search for exercise by name (English = language 2)
-      const response = await fetch(
-        `${BASE_URL}/exercise/?language=2&limit=20&search=${encodeURIComponent(searchTerm)}`,
-        { headers: { 'Accept': 'application/json' } }
-      );
-
-      if (!response.ok) return null;
-
-      const data = await response.json();
-      return data.results || [];
-    } catch (error) {
-      console.log('Exercise search failed:', error);
-      return [];
-    }
-  }
-
-  async getExerciseImages(exerciseBaseId) {
-    try {
-      const response = await fetch(
-        `${BASE_URL}/exerciseimage/?exercise_base=${exerciseBaseId}&is_main=True`,
-        { headers: { 'Accept': 'application/json' } }
-      );
-
-      if (!response.ok) return [];
-
-      const data = await response.json();
-      return data.results || [];
-    } catch (error) {
-      console.log('Image fetch failed:', error);
-      return [];
-    }
+  getLocalPath(exerciseId) {
+    const ext = EXERCISE_IMAGE_URLS[exerciseId]?.split('.').pop() || 'png';
+    return `${IMAGE_DIR}${exerciseId}.${ext}`;
   }
 
   async getImageForExercise(exerciseId) {
-    // Check cache first
-    if (this.imageCache[exerciseId]) {
-      return this.imageCache[exerciseId];
+    // Check if we have a local cached file
+    if (this.localPathCache[exerciseId]) {
+      const fileInfo = await FileSystem.getInfoAsync(this.localPathCache[exerciseId]);
+      if (fileInfo.exists) {
+        return this.localPathCache[exerciseId];
+      }
     }
 
+    // Check if we have a hardcoded URL for this exercise
+    const remoteUrl = EXERCISE_IMAGE_URLS[exerciseId];
+    if (!remoteUrl) {
+      return null; // No image available for this exercise
+    }
+
+    // Download and cache locally
     try {
-      let exerciseBaseId = null;
+      const localPath = this.getLocalPath(exerciseId);
+      const downloadResult = await FileSystem.downloadAsync(remoteUrl, localPath);
 
-      // First, check if we have a direct WGER exercise base ID mapping
-      if (WGER_EXERCISE_BASE_IDS[exerciseId]) {
-        exerciseBaseId = WGER_EXERCISE_BASE_IDS[exerciseId];
-      } else {
-        // Fall back to search
-        const searchTerm = EXERCISE_NAME_MAP[exerciseId] || exerciseId.replace(/-/g, ' ');
-        const exercises = await this.searchExercise(searchTerm);
-
-        if (exercises.length === 0) {
-          this.imageCache[exerciseId] = null;
-          return null;
-        }
-
-        // Get the exercise base ID from the first result
-        exerciseBaseId = exercises[0].exercise_base;
-      }
-
-      // Fetch images for this exercise
-      const images = await this.getExerciseImages(exerciseBaseId);
-
-      if (images.length > 0) {
-        const imageUrl = images[0].image;
-        this.imageCache[exerciseId] = imageUrl;
+      if (downloadResult.status === 200) {
+        this.localPathCache[exerciseId] = localPath;
         this.saveCache();
-        return imageUrl;
+        return localPath;
       }
-
-      // If no main image, try getting any image
-      const allImagesResponse = await fetch(
-        `${BASE_URL}/exerciseimage/?exercise_base=${exerciseBaseId}`,
-        { headers: { 'Accept': 'application/json' } }
-      );
-
-      if (allImagesResponse.ok) {
-        const allImagesData = await allImagesResponse.json();
-        if (allImagesData.results && allImagesData.results.length > 0) {
-          const imageUrl = allImagesData.results[0].image;
-          this.imageCache[exerciseId] = imageUrl;
-          this.saveCache();
-          return imageUrl;
-        }
-      }
-
-      this.imageCache[exerciseId] = null;
-      return null;
     } catch (error) {
-      console.log('Failed to get image for exercise:', exerciseId, error);
-      this.imageCache[exerciseId] = null;
-      return null;
+      console.log('Failed to download image for:', exerciseId, error);
     }
+
+    // Fallback to remote URL if download fails
+    return remoteUrl;
   }
 
   // Batch fetch images for multiple exercises
   async getImagesForExercises(exerciseIds) {
     const results = {};
 
-    // Check cache first and identify missing
-    const missing = [];
     for (const id of exerciseIds) {
-      if (this.imageCache[id] !== undefined) {
-        results[id] = this.imageCache[id];
-      } else {
-        missing.push(id);
-      }
-    }
-
-    // Fetch missing images (limit concurrent requests)
-    const batchSize = 3;
-    for (let i = 0; i < missing.length; i += batchSize) {
-      const batch = missing.slice(i, i + batchSize);
-      const promises = batch.map(id => this.getImageForExercise(id));
-      const batchResults = await Promise.all(promises);
-
-      batch.forEach((id, index) => {
-        results[id] = batchResults[index];
-      });
+      results[id] = await this.getImageForExercise(id);
     }
 
     return results;
   }
 
-  clearCache() {
-    this.imageCache = {};
-    AsyncStorage.removeItem(CACHE_KEY);
+  async clearCache() {
+    this.localPathCache = {};
+    await AsyncStorage.removeItem(CACHE_KEY);
+
+    // Delete cached image files
+    try {
+      const dirInfo = await FileSystem.getInfoAsync(IMAGE_DIR);
+      if (dirInfo.exists) {
+        await FileSystem.deleteAsync(IMAGE_DIR, { idempotent: true });
+        await FileSystem.makeDirectoryAsync(IMAGE_DIR, { intermediates: true });
+      }
+    } catch (error) {
+      console.log('Failed to clear image cache:', error);
+    }
+  }
+
+  // Clear cache for a specific exercise and re-fetch
+  async refreshExerciseImage(exerciseId) {
+    // Remove local file if exists
+    const localPath = this.localPathCache[exerciseId];
+    if (localPath) {
+      try {
+        await FileSystem.deleteAsync(localPath, { idempotent: true });
+      } catch (error) {
+        console.log('Failed to delete cached image:', error);
+      }
+    }
+
+    // Remove from cache
+    delete this.localPathCache[exerciseId];
+    await this.saveCache();
+
+    // Re-fetch the image
+    return this.getImageForExercise(exerciseId);
   }
 }
 

@@ -63,7 +63,8 @@ export default function SettingsScreen({ navigation }) {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView style={styles.scrollContent} contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
       <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
 
       <View style={styles.section}>
@@ -200,14 +201,21 @@ export default function SettingsScreen({ navigation }) {
           )}
         </TouchableOpacity>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    flex: 1,
+  },
+  scrollContainer: {
     padding: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   title: {
     fontSize: fontSize.xxxl,

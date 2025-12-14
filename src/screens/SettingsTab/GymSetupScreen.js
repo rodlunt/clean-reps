@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useGymProfile } from '../../context/GymProfileContext';
 import { spacing, fontSize, borderRadius } from '../../theme';
@@ -78,7 +78,16 @@ export default function GymSetupScreen({ navigation, route }) {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
         <Text style={[styles.label, { color: colors.textSecondary }]}>Gym Name</Text>
         <TextInput
           style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
@@ -141,6 +150,7 @@ export default function GymSetupScreen({ navigation, route }) {
 
         <View style={styles.spacer} />
       </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -222,6 +232,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
   },
   spacer: {
-    height: spacing.xl,
+    height: 100,
   },
 });
