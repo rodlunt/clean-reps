@@ -50,6 +50,12 @@ export default function TabNavigator() {
             <TabIcon name="Workout" focused={focused} color={color} />
           ),
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate('Workout', { screen: 'WorkoutHome' });
+          },
+        })}
       />
       <Tab.Screen
         name="Routines"
@@ -59,6 +65,12 @@ export default function TabNavigator() {
             <TabIcon name="Routines" focused={focused} color={color} />
           ),
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate('Routines', { screen: 'RoutineList' });
+          },
+        })}
       />
       <Tab.Screen
         name="Progress"
@@ -79,7 +91,12 @@ export default function TabNavigator() {
         }}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
-            navigation.navigate('Settings', { screen: 'SettingsHome' });
+            // Prevent default behavior
+            e.preventDefault();
+            // Reset to SettingsHome when tab is pressed
+            navigation.navigate('Settings', {
+              screen: 'SettingsHome',
+            });
           },
         })}
       />

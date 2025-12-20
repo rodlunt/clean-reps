@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useWorkout } from '../../context/WorkoutContext';
@@ -39,6 +39,7 @@ export default function ProgressScreen() {
   const { units, displayWeight } = useSettings();
   const [activeTab, setActiveTab] = useState('history');
   const [selectedExercise, setSelectedExercise] = useState(null);
+  const [expandedSession, setExpandedSession] = useState(null);
 
   // Get unique exercises from workout history
   const exerciseList = useMemo(() => {
@@ -52,6 +53,13 @@ export default function ProgressScreen() {
     });
     return Array.from(exercises.entries()).map(([name, id]) => ({ name, id }));
   }, [workoutHistory]);
+
+  // Auto-select first exercise when switching to Charts tab
+  useEffect(() => {
+    if (activeTab === 'charts' && !selectedExercise && exerciseList.length > 0) {
+      setSelectedExercise(exerciseList[0]);
+    }
+  }, [activeTab, exerciseList, selectedExercise]);
 
   // Get 1RM history for selected exercise
   const exerciseHistory = useMemo(() => {
@@ -205,10 +213,13 @@ export default function ProgressScreen() {
             sortedHistory.map(session => {
               const volume = calculateVolume(session.exercises);
               const duration = formatDuration(session.duration);
+              const isExpanded = expandedSession === session.id;
               return (
-                <View
+                <TouchableOpacity
                   key={session.id}
                   style={[styles.historyCard, { backgroundColor: colors.card }, shadows.sm]}
+                  onPress={() => setExpandedSession(isExpanded ? null : session.id)}
+                  activeOpacity={0.7}
                 >
                   <View style={styles.historyHeader}>
                     <Text style={[styles.historyDate, { color: colors.text }]}>
@@ -237,7 +248,28 @@ export default function ProgressScreen() {
                       </Text>
                     )}
                   </View>
-                </View>
+                  {isExpanded && session.exercises && session.exercises.length > 0 && (
+                    <View style={[styles.exerciseDetails, { borderTopColor: colors.border }]}>
+                      {session.exercises.map((ex, idx) => (
+                        <View key={idx} style={styles.exerciseDetailRow}>
+                          <Text style={[styles.exerciseDetailName, { color: colors.text }]}>
+                            {ex.name}
+                          </Text>
+                          <View style={styles.setsRow}>
+                            {ex.sets?.map((set, setIdx) => (
+                              <Text key={setIdx} style={[styles.setText, { color: colors.textSecondary }]}>
+                                {displayWeight(set.weight)}{units} x {set.reps}
+                              </Text>
+                            ))}
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                  <Text style={[styles.tapHint, { color: colors.textSecondary }]}>
+                    {isExpanded ? 'Tap to collapse' : 'Tap to see exercises'}
+                  </Text>
+                </TouchableOpacity>
               );
             })
           )
@@ -416,5 +448,31 @@ const styles = StyleSheet.create({
   pbText: {
     fontSize: fontSize.sm,
     fontWeight: '600',
+  },
+  exerciseDetails: {
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+  },
+  exerciseDetailRow: {
+    marginBottom: spacing.sm,
+  },
+  exerciseDetailName: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  setsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  setText: {
+    fontSize: fontSize.xs,
+  },
+  tapHint: {
+    fontSize: fontSize.xs,
+    textAlign: 'center',
+    marginTop: spacing.sm,
   },
 });

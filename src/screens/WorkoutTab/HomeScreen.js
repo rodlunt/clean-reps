@@ -77,7 +77,7 @@ export default function HomeScreen({ navigation }) {
   const { colors, isDark } = useTheme();
   const shadows = isDark ? shadowsDark : shadowsLight;
   const { routines, currentRoutine, setCurrentRoutine, workoutHistory, personalBests } = useWorkout();
-  const { gymProfiles } = useGymProfile();
+  const { gymProfiles, activeProfileId, getActiveProfile } = useGymProfile();
   const { units, displayWeight } = useSettings();
   const [showRoutinePicker, setShowRoutinePicker] = useState(false);
   const [showDayPicker, setShowDayPicker] = useState(false);
@@ -212,7 +212,7 @@ export default function HomeScreen({ navigation }) {
           </Text>
           <Text style={[styles.gymQuickName, { color: colors.text }]}>
             {gymProfiles.length > 0
-              ? gymProfiles.find(g => g.id === gymProfiles[0]?.id)?.name || 'Set up gym'
+              ? getActiveProfile()?.name || 'Select a gym'
               : 'No gym set up'}
           </Text>
           <Text style={[styles.gymQuickHint, { color: colors.primary }]}>

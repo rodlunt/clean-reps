@@ -144,19 +144,24 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
   }
 
   // Calculate current best 1RM for this exercise from entered data
+  // Convert entered weight to kg for consistent calculation with stored PRs
   const currentBest1RM = useMemo(() => {
+    if (!currentExercise) return 0;
     let best = 0;
     currentExercise.sets.forEach(set => {
       if (set.weight && set.reps) {
-        const rm = calculate1RM(parseFloat(set.weight), parseInt(set.reps));
+        const weightInKg = toStorageWeight(parseFloat(set.weight));
+        const rm = calculate1RM(weightInKg, parseInt(set.reps));
         if (rm > best) best = rm;
       }
     });
     return best;
-  }, [currentExercise.sets]);
+  }, [currentExercise?.sets, toStorageWeight]);
 
   // Get stored PR for this exercise
-  const storedPR = personalBests[currentExercise.exerciseId] || personalBests[currentExercise.name];
+  const storedPR = currentExercise
+    ? (personalBests[currentExercise.exerciseId] || personalBests[currentExercise.name])
+    : null;
 
   const updateSet = (setIndex, field, value) => {
     const newData = [...workoutData];

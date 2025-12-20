@@ -1,0 +1,15 @@
+Version 1.0.1 - Bug Fixes & Improvements
+
+What's New:
+- Fixed gym profile selection to correctly display your active gym
+- Added ability to delete gym profiles from Settings
+- History items in Progress tab are now expandable to show workout details
+- Charts tab now auto-selects first exercise for immediate viewing
+- Tapping weight/reps placeholders now uses previous values instantly
+- Added duplicate routine name validation
+- Fixed navigation to properly reset to home screen when switching tabs
+- Improved weight unit conversion accuracy for 1RM calculations
+- Enhanced error handling throughout the app
+- Various stability improvements and bug fixes
+
+Thank you for using Clean Reps! Your feedback helps us improve.

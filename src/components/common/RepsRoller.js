@@ -79,8 +79,13 @@ export default function RepsRoller({
             borderColor: colors.border
           }]}
           onPress={() => {
-            setInputValue(value || '');
-            setManualInput(true);
+            // If no value but there's a placeholder, use the placeholder value
+            if (!value && placeholder) {
+              onChange(placeholder.toString());
+            } else {
+              setInputValue(value || '');
+              setManualInput(true);
+            }
           }}
           onLongPress={() => {
             setInputValue(value || '');

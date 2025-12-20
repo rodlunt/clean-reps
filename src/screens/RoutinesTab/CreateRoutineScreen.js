@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal, FlatList, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal, FlatList, Switch, Alert } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useWorkout } from '../../context/WorkoutContext';
 import { useExercises } from '../../context/ExerciseContext';
@@ -17,7 +17,7 @@ const isBodyweightExercise = (exercise) => {
 export default function CreateRoutineScreen({ navigation, route }) {
   const { colors, isDark } = useTheme();
   const shadows = isDark ? shadowsDark : shadowsLight;
-  const { addRoutine, updateRoutine, deleteRoutine } = useWorkout();
+  const { addRoutine, updateRoutine, deleteRoutine, routines } = useWorkout();
   const { muscleGroups, filterExercises } = useExercises();
   const { gymProfiles, activeProfileId } = useGymProfile();
 
@@ -156,37 +156,63 @@ export default function CreateRoutineScreen({ navigation, route }) {
 
   const handleSave = async () => {
     if (!routineName.trim()) {
+      Alert.alert('Missing Name', 'Please enter a routine name.');
       return;
     }
 
-    const routine = {
-      id: isEditing ? editRoutine.id : Date.now().toString(),
-      name: routineName.trim(),
-      gymProfileId: selectedGymId,
-      days: days.map(d => ({
-        id: d.id,
-        name: d.name.trim() || `Day ${days.indexOf(d) + 1}`,
-        exercises: d.exercises.map(ex => ({
-          exerciseId: ex.exerciseId,
-          name: ex.name,
-          sets: ex.sets,
-          useBodyweight: ex.useBodyweight || false,
-        })),
-      })),
-    };
+    // Check for duplicate routine names
+    const trimmedName = routineName.trim().toLowerCase();
+    const duplicateExists = routines.some(r =>
+      r.name.toLowerCase() === trimmedName &&
+      (!isEditing || r.id !== editRoutine.id)
+    );
 
-    if (isEditing) {
-      await updateRoutine(editRoutine.id, routine);
-    } else {
-      await addRoutine(routine);
+    if (duplicateExists) {
+      Alert.alert(
+        'Duplicate Name',
+        'A routine with this name already exists. Please choose a different name.'
+      );
+      return;
     }
-    navigation.goBack();
+
+    try {
+      const routine = {
+        id: isEditing ? editRoutine.id : Date.now().toString(),
+        name: routineName.trim(),
+        gymProfileId: selectedGymId,
+        days: days.map(d => ({
+          id: d.id,
+          name: d.name.trim() || `Day ${days.indexOf(d) + 1}`,
+          exercises: d.exercises.map(ex => ({
+            exerciseId: ex.exerciseId,
+            name: ex.name,
+            sets: ex.sets,
+            useBodyweight: ex.useBodyweight || false,
+          })),
+        })),
+      };
+
+      if (isEditing) {
+        await updateRoutine(editRoutine.id, routine);
+      } else {
+        await addRoutine(routine);
+      }
+      navigation.goBack();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save routine. Please try again.');
+      console.error('Save routine error:', error);
+    }
   };
 
   const handleDelete = async () => {
     if (editRoutine) {
-      await deleteRoutine(editRoutine.id);
-      navigation.goBack();
+      try {
+        await deleteRoutine(editRoutine.id);
+        navigation.goBack();
+      } catch (error) {
+        Alert.alert('Error', 'Failed to delete routine. Please try again.');
+        console.error('Delete routine error:', error);
+      }
     }
   };
 

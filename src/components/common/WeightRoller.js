@@ -139,7 +139,14 @@ export default function WeightRoller({
             backgroundColor: colors.background,
             borderColor: colors.border
           }]}
-          onPress={() => setManualInput(true)}
+          onPress={() => {
+            // If no value but there's a placeholder, use the placeholder value
+            if (!value && placeholder) {
+              onChange(placeholder.toString());
+            } else {
+              setManualInput(true);
+            }
+          }}
           onLongPress={() => setManualInput(true)}
         >
           <Text style={[styles.valueText, { color: value ? colors.text : colors.placeholder }]}>

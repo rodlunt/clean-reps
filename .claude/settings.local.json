@@ -36,7 +36,9 @@
       "Bash(D:GymAppandroidgradlew.bat -p D:GymAppandroid bundleRelease)",
       "Bash(\"C:\\Program Files\\Android\\Android Studio\\jbr\\bin\\keytool.exe\" -list -keystore \"D:\\GymApp\\android\\app\\release.keystore\" -storepass CleanReps2025Key)",
       "Bash(\"C:\\Program Files\\Android\\Android Studio\\jbr\\bin\\keytool.exe\" -list -keystore \"D:\\GymApp\\android\\app\\release.keystore\" -storepass Cr3ps_Gym_2025_SecureKey)",
-      "Bash(\"C:\\Program Files\\Android\\Android Studio\\jbr\\bin\\keytool.exe\" -list -v -keystore \"D:\\GymApp\\android\\app\\release.keystore\" -storepass Cr3ps_Gym_2025_SecureKey)"
+      "Bash(\"C:\\Program Files\\Android\\Android Studio\\jbr\\bin\\keytool.exe\" -list -v -keystore \"D:\\GymApp\\android\\app\\release.keystore\" -storepass Cr3ps_Gym_2025_SecureKey)",
+      "Bash(java -version:*)",
+      "Bash(\"C:\\Program Files\\Android\\Android Studio\\jbr\\bin\\java.exe\" -version)"
     ],
     "deny": [],
     "ask": []

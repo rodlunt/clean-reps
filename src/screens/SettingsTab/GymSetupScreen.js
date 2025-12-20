@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useGymProfile } from '../../context/GymProfileContext';
 import { spacing, fontSize, borderRadius } from '../../theme';
@@ -8,7 +8,7 @@ import Button from '../../components/common/Button';
 
 export default function GymSetupScreen({ navigation, route }) {
   const { colors } = useTheme();
-  const { addProfile, updateProfile, gymProfiles } = useGymProfile();
+  const { addProfile, updateProfile, deleteProfile, gymProfiles } = useGymProfile();
   const editingProfile = route.params?.profile;
 
   const [gymName, setGymName] = useState(editingProfile?.name || '');
@@ -33,19 +33,50 @@ export default function GymSetupScreen({ navigation, route }) {
   };
 
   const handleSave = async () => {
-    if (!gymName.trim()) return;
-
-    const profileData = {
-      name: gymName.trim(),
-      equipment: selectedEquipment,
-    };
-
-    if (editingProfile) {
-      await updateProfile(editingProfile.id, profileData);
-    } else {
-      await addProfile(profileData);
+    if (!gymName.trim()) {
+      Alert.alert('Missing Name', 'Please enter a gym name.');
+      return;
     }
-    navigation.goBack();
+
+    try {
+      const profileData = {
+        name: gymName.trim(),
+        equipment: selectedEquipment,
+      };
+
+      if (editingProfile) {
+        await updateProfile(editingProfile.id, profileData);
+      } else {
+        await addProfile(profileData);
+      }
+      navigation.goBack();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save gym profile. Please try again.');
+      console.error('Save gym error:', error);
+    }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Gym',
+      `Are you sure you want to delete "${editingProfile?.name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteProfile(editingProfile.id);
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete gym profile. Please try again.');
+              console.error('Delete gym error:', error);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const groupedEquipment = COMMON_EQUIPMENT.reduce((acc, item) => {
@@ -148,6 +179,17 @@ export default function GymSetupScreen({ navigation, route }) {
           </View>
         ))}
 
+        {editingProfile && (
+          <TouchableOpacity
+            style={[styles.deleteButton, { borderColor: colors.error }]}
+            onPress={handleDelete}
+          >
+            <Text style={[styles.deleteButtonText, { color: colors.error }]}>
+              Delete Gym
+            </Text>
+          </TouchableOpacity>
+        )}
+
         <View style={styles.spacer} />
       </ScrollView>
       </KeyboardAvoidingView>
@@ -233,5 +275,16 @@ const styles = StyleSheet.create({
   },
   spacer: {
     height: 100,
+  },
+  deleteButton: {
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    alignItems: 'center',
+    marginTop: spacing.lg,
+  },
+  deleteButtonText: {
+    fontSize: fontSize.md,
+    fontWeight: '600',
   },
 });
