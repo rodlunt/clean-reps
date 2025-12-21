@@ -39,7 +39,8 @@
       "Bash(\"C:\\Program Files\\Android\\Android Studio\\jbr\\bin\\keytool.exe\" -list -v -keystore \"D:\\GymApp\\android\\app\\release.keystore\" -storepass Cr3ps_Gym_2025_SecureKey)",
       "Bash(java -version:*)",
       "Bash(\"C:\\Program Files\\Android\\Android Studio\\jbr\\bin\\java.exe\" -version)",
-      "Bash(cmd /c \"cd /d D:\\\\GymApp && npx expo prebuild --platform android\")"
+      "Bash(cmd /c \"cd /d D:\\\\GymApp && npx expo prebuild --platform android\")",
+      "Bash(tasklist /FI \"IMAGENAME eq git.exe\" /FO TABLE)"
     ],
     "deny": [],
     "ask": []
