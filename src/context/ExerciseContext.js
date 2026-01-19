@@ -6,7 +6,8 @@ const ExerciseContext = createContext();
 
 export function ExerciseProvider({ children }) {
   const exercises = exerciseData.exercises;
-  const muscleGroups = exerciseData.muscleGroups;
+  // Sort muscle groups alphabetically for consistent display
+  const muscleGroups = [...exerciseData.muscleGroups].sort((a, b) => a.localeCompare(b));
   const equipmentList = exerciseData.equipmentList;
 
   // Image state

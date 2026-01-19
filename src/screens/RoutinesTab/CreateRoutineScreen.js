@@ -26,6 +26,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
 
   const [routineName, setRoutineName] = useState(editRoutine?.name || '');
   const [selectedGymId, setSelectedGymId] = useState(editRoutine?.gymProfileId || activeProfileId || null);
+  const [nextSupersetId, setNextSupersetId] = useState(1);
   const [days, setDays] = useState(
     editRoutine?.days?.map(d => ({
       id: d.id,
@@ -37,6 +38,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
         sets: ex.sets || 3,
         isBodyweight: ex.useBodyweight,
         useBodyweight: ex.useBodyweight || false,
+        supersetGroup: ex.supersetGroup || null,
       })),
     })) || [{ id: '1', name: '', exercises: [] }]
   );
@@ -145,10 +147,85 @@ export default function CreateRoutineScreen({ navigation, route }) {
   const removeExercise = (dayId, exerciseId) => {
     setDays(days.map(d => {
       if (d.id === dayId) {
-        return {
-          ...d,
-          exercises: d.exercises.filter(ex => ex.id !== exerciseId),
-        };
+        const exerciseToRemove = d.exercises.find(ex => ex.id === exerciseId);
+        const groupId = exerciseToRemove?.supersetGroup;
+
+        // Get exercises without the removed one
+        let newExercises = d.exercises.filter(ex => ex.id !== exerciseId);
+
+        // If the removed exercise was in a superset, check if only one remains
+        if (groupId !== null) {
+          const remainingInGroup = newExercises.filter(ex => ex.supersetGroup === groupId);
+          if (remainingInGroup.length === 1) {
+            // Only one left, remove it from superset
+            newExercises = newExercises.map(ex =>
+              ex.supersetGroup === groupId ? { ...ex, supersetGroup: null } : ex
+            );
+          }
+        }
+
+        return { ...d, exercises: newExercises };
+      }
+      return d;
+    }));
+  };
+
+  /**
+   * Link two adjacent exercises as a superset
+   * @param {string} dayId - Day containing the exercises
+   * @param {number} exerciseIndex - Index of first exercise to link
+   */
+  const linkSuperset = (dayId, exerciseIndex) => {
+    setDays(days.map(d => {
+      if (d.id === dayId && exerciseIndex < d.exercises.length - 1) {
+        const newExercises = [...d.exercises];
+        const first = newExercises[exerciseIndex];
+        const second = newExercises[exerciseIndex + 1];
+
+        let groupId;
+        if (first.supersetGroup !== null) {
+          groupId = first.supersetGroup;
+        } else if (second.supersetGroup !== null) {
+          groupId = second.supersetGroup;
+        } else {
+          groupId = nextSupersetId;
+          setNextSupersetId(prev => prev + 1);
+        }
+
+        newExercises[exerciseIndex] = { ...first, supersetGroup: groupId };
+        newExercises[exerciseIndex + 1] = { ...second, supersetGroup: groupId };
+
+        return { ...d, exercises: newExercises };
+      }
+      return d;
+    }));
+  };
+
+  /**
+   * Unlink an exercise from its superset
+   * @param {string} dayId - Day containing the exercise
+   * @param {string} exerciseId - Exercise to unlink
+   */
+  const unlinkSuperset = (dayId, exerciseId) => {
+    setDays(days.map(d => {
+      if (d.id === dayId) {
+        const exercise = d.exercises.find(ex => ex.id === exerciseId);
+        if (!exercise || exercise.supersetGroup === null) return d;
+
+        const groupId = exercise.supersetGroup;
+        let newExercises = d.exercises.map(ex =>
+          ex.id === exerciseId ? { ...ex, supersetGroup: null } : ex
+        );
+
+        // Check if only one remains in the superset
+        const remainingInGroup = newExercises.filter(ex => ex.supersetGroup === groupId);
+        if (remainingInGroup.length === 1) {
+          newExercises = newExercises.map(ex =>
+            ex.supersetGroup === groupId ? { ...ex, supersetGroup: null } : ex
+          );
+        }
+
+        return { ...d, exercises: newExercises };
       }
       return d;
     }));
@@ -188,6 +265,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
             name: ex.name,
             sets: ex.sets,
             useBodyweight: ex.useBodyweight || false,
+            supersetGroup: ex.supersetGroup,
           })),
         })),
       };
@@ -313,41 +391,85 @@ export default function CreateRoutineScreen({ navigation, route }) {
               )}
             </View>
 
-            {day.exercises.map((exercise) => (
-              <View key={exercise.id} style={[styles.exerciseRow, { borderTopColor: colors.border }]}>
-                <View style={styles.exerciseInfo}>
-                  <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
-                    {exercise.name}
-                  </Text>
-                  {exercise.isBodyweight && (
-                    <View style={styles.bodyweightToggle}>
-                      <Text style={[styles.bodyweightLabel, { color: colors.textSecondary }]}>
-                        {exercise.useBodyweight ? 'BW only' : '+Weight'}
-                      </Text>
-                      <Switch
-                        value={!exercise.useBodyweight}
-                        onValueChange={() => toggleBodyweight(day.id, exercise.id)}
-                        trackColor={{ false: colors.border, true: colors.primary + '60' }}
-                        thumbColor={exercise.useBodyweight ? colors.card : colors.primary}
-                        style={styles.switch}
+            {day.exercises.map((exercise, exerciseIndex) => {
+              const isInSuperset = exercise.supersetGroup !== null;
+              const nextExercise = day.exercises[exerciseIndex + 1];
+              const canLinkNext = exerciseIndex < day.exercises.length - 1;
+              const isLinkedToNext = canLinkNext && nextExercise?.supersetGroup !== null &&
+                nextExercise.supersetGroup === exercise.supersetGroup;
+
+              return (
+                <React.Fragment key={exercise.id}>
+                  <View style={[
+                    styles.exerciseRow,
+                    { borderTopColor: colors.border },
+                    isInSuperset && { borderLeftWidth: 3, borderLeftColor: colors.warning || '#F59E0B' }
+                  ]}>
+                    <View style={styles.exerciseInfo}>
+                      <View style={styles.exerciseNameRow}>
+                        {isInSuperset && (
+                          <View style={[styles.supersetBadge, { backgroundColor: colors.warning || '#F59E0B' }]}>
+                            <Text style={styles.supersetBadgeText}>SS</Text>
+                          </View>
+                        )}
+                        <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
+                          {exercise.name}
+                        </Text>
+                      </View>
+                      {exercise.isBodyweight && (
+                        <View style={styles.bodyweightToggle}>
+                          <Text style={[styles.bodyweightLabel, { color: colors.textSecondary }]}>
+                            {exercise.useBodyweight ? 'BW only' : '+Weight'}
+                          </Text>
+                          <Switch
+                            value={!exercise.useBodyweight}
+                            onValueChange={() => toggleBodyweight(day.id, exercise.id)}
+                            trackColor={{ false: colors.border, true: colors.primary + '60' }}
+                            thumbColor={exercise.useBodyweight ? colors.card : colors.primary}
+                            style={styles.switch}
+                          />
+                        </View>
+                      )}
+                    </View>
+                    <View style={styles.setsContainer}>
+                      <TextInput
+                        style={[styles.setsInput, { backgroundColor: colors.background, color: colors.text }]}
+                        keyboardType="numeric"
+                        value={exercise.sets.toString()}
+                        onChangeText={(text) => updateExerciseSets(day.id, exercise.id, text)}
                       />
+                      <Text style={[styles.setsLabel, { color: colors.textSecondary }]}>sets</Text>
+                    </View>
+                    {isInSuperset ? (
+                      <TouchableOpacity
+                        style={[styles.unlinkButton, { backgroundColor: (colors.warning || '#F59E0B') + '20' }]}
+                        onPress={() => unlinkSuperset(day.id, exercise.id)}
+                      >
+                        <Text style={[styles.unlinkButtonText, { color: colors.warning || '#F59E0B' }]}>⛓</Text>
+                      </TouchableOpacity>
+                    ) : null}
+                    <TouchableOpacity onPress={() => removeExercise(day.id, exercise.id)}>
+                      <Text style={[styles.removeExText, { color: colors.error }]}>X</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {canLinkNext && !isLinkedToNext && (
+                    <TouchableOpacity
+                      style={[styles.linkSupersetButton, { borderColor: colors.border }]}
+                      onPress={() => linkSuperset(day.id, exerciseIndex)}
+                    >
+                      <Text style={[styles.linkSupersetText, { color: colors.textSecondary }]}>
+                        ⛓ Link as superset
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  {isLinkedToNext && (
+                    <View style={[styles.supersetConnector, { backgroundColor: colors.warning || '#F59E0B' }]}>
+                      <Text style={styles.supersetConnectorText}>⛓</Text>
                     </View>
                   )}
-                </View>
-                <View style={styles.setsContainer}>
-                  <TextInput
-                    style={[styles.setsInput, { backgroundColor: colors.background, color: colors.text }]}
-                    keyboardType="numeric"
-                    value={exercise.sets.toString()}
-                    onChangeText={(text) => updateExerciseSets(day.id, exercise.id, text)}
-                  />
-                  <Text style={[styles.setsLabel, { color: colors.textSecondary }]}>sets</Text>
-                </View>
-                <TouchableOpacity onPress={() => removeExercise(day.id, exercise.id)}>
-                  <Text style={[styles.removeExText, { color: colors.error }]}>X</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
+                </React.Fragment>
+              );
+            })}
 
             <TouchableOpacity
               style={styles.addExerciseButton}
@@ -402,6 +524,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
             horizontal
             showsHorizontalScrollIndicator={false}
             style={styles.muscleFilter}
+            contentContainerStyle={styles.muscleFilterContent}
           >
             <TouchableOpacity
               style={[
@@ -627,15 +750,24 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     maxHeight: 44,
   },
+  muscleFilterContent: {
+    paddingRight: spacing.xl,
+  },
   muscleChip: {
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.md,
     marginRight: spacing.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 36,
   },
   muscleChipText: {
     fontSize: fontSize.sm,
     fontWeight: '500',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    includeFontPadding: false,
   },
   exerciseList: {
     flex: 1,
@@ -667,5 +799,52 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.xl,
     fontSize: fontSize.md,
+  },
+  // Superset styles
+  exerciseNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    flex: 1,
+  },
+  supersetBadge: {
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+  },
+  supersetBadgeText: {
+    color: '#FFFFFF',
+    fontSize: fontSize.xs,
+    fontWeight: '700',
+  },
+  unlinkButton: {
+    padding: spacing.xs,
+    borderRadius: borderRadius.sm,
+    marginRight: spacing.xs,
+  },
+  unlinkButtonText: {
+    fontSize: fontSize.md,
+  },
+  linkSupersetButton: {
+    paddingVertical: spacing.xs,
+    marginLeft: spacing.lg,
+    borderLeftWidth: 1,
+    borderStyle: 'dashed',
+    paddingLeft: spacing.sm,
+  },
+  linkSupersetText: {
+    fontSize: fontSize.xs,
+  },
+  supersetConnector: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginVertical: spacing.xs,
+  },
+  supersetConnectorText: {
+    fontSize: fontSize.sm,
   },
 });

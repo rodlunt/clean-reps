@@ -39,16 +39,6 @@ const getNextScheduledDay = (routine, workoutHistory) => {
   };
 };
 
-// Check if user might be behind schedule (last workout > 3 days ago)
-const isBehindSchedule = (routine, workoutHistory) => {
-  const routineSessions = workoutHistory.filter(s => s.routineId === routine?.id);
-  if (routineSessions.length === 0) return false;
-
-  const lastSession = routineSessions.sort((a, b) => b.date - a.date)[0];
-  const daysSinceLastWorkout = (Date.now() - lastSession.date) / (1000 * 60 * 60 * 24);
-  return daysSinceLastWorkout > 3;
-};
-
 const calculateWeeklyVolume = (history) => {
   const now = Date.now();
   const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
@@ -124,7 +114,6 @@ export default function HomeScreen({ navigation }) {
 
   // Next scheduled day tracking
   const nextScheduled = useMemo(() => getNextScheduledDay(currentRoutine, workoutHistory), [currentRoutine, workoutHistory]);
-  const behindSchedule = useMemo(() => isBehindSchedule(currentRoutine, workoutHistory), [currentRoutine, workoutHistory]);
 
   // Get volume history for mini chart (last 4 weeks)
   const volumeHistory = useMemo(() => {
@@ -250,23 +239,8 @@ export default function HomeScreen({ navigation }) {
                 </Text>
               </View>
             )}
-            {behindSchedule && (
-              <View style={[styles.behindBadge, { backgroundColor: colors.primary + '20' }]}>
-                <Text style={[styles.behindBadgeText, { color: colors.primary }]}>
-                  Behind schedule? Tap "Start" to pick any day
-                </Text>
-              </View>
-            )}
             <Text style={[styles.routineDays, { color: colors.textSecondary }]}>
               {currentRoutine.days?.length || 0} days • Tap to change routine
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.clearRoutineButton}
-            onPress={() => setCurrentRoutine(null)}
-          >
-            <Text style={[styles.clearRoutineText, { color: colors.error }]}>
-              Clear Routine
             </Text>
           </TouchableOpacity>
         </GradientCard>
@@ -296,27 +270,62 @@ export default function HomeScreen({ navigation }) {
       {/* Exercise Preview for Next Workout */}
       {nextScheduled && nextScheduled.day.exercises?.length > 0 && (
         <View style={[styles.exercisePreview, { backgroundColor: colors.card }, shadows.sm]}>
-          <Text style={[styles.previewTitle, { color: colors.textSecondary }]}>
-            TODAY'S EXERCISES
-          </Text>
+          <View style={styles.previewHeader}>
+            <Text style={[styles.previewTitle, { color: colors.textSecondary }]}>
+              TODAY'S EXERCISES
+            </Text>
+            <TouchableOpacity
+              style={[styles.editDayButton, { backgroundColor: colors.primary + '20' }]}
+              onPress={() => navigation.navigate('Routines', {
+                screen: 'CreateRoutine',
+                params: { editRoutine: currentRoutine }
+              })}
+            >
+              <Text style={[styles.editDayButtonText, { color: colors.primary }]}>Edit</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.exerciseList}>
-            {nextScheduled.day.exercises.slice(0, 5).map((exercise, index) => (
-              <View key={index} style={styles.exerciseItem}>
-                <View style={[styles.exerciseNumber, { backgroundColor: colors.primary + '20' }]}>
-                  <Text style={[styles.exerciseNumberText, { color: colors.primary }]}>
-                    {index + 1}
-                  </Text>
-                </View>
-                <View style={styles.exerciseInfo}>
-                  <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
-                    {exercise.name}
-                  </Text>
-                  <Text style={[styles.exerciseSets, { color: colors.textSecondary }]}>
-                    {exercise.sets} sets
-                  </Text>
-                </View>
-              </View>
-            ))}
+            {nextScheduled.day.exercises.slice(0, 5).map((exercise, index) => {
+              const isInSuperset = exercise.supersetGroup !== null;
+              const nextExercise = nextScheduled.day.exercises[index + 1];
+              const isLinkedToNext = nextExercise?.supersetGroup !== null &&
+                nextExercise.supersetGroup === exercise.supersetGroup;
+
+              return (
+                <React.Fragment key={index}>
+                  <View style={[
+                    styles.exerciseItem,
+                    isInSuperset && { borderLeftWidth: 2, borderLeftColor: colors.warning || '#F59E0B', paddingLeft: spacing.xs }
+                  ]}>
+                    <View style={[styles.exerciseNumber, { backgroundColor: colors.primary + '20' }]}>
+                      <Text style={[styles.exerciseNumberText, { color: colors.primary }]}>
+                        {index + 1}
+                      </Text>
+                    </View>
+                    <View style={styles.exerciseInfo}>
+                      <View style={styles.exerciseNameRow}>
+                        {isInSuperset && (
+                          <View style={[styles.supersetBadgeSmall, { backgroundColor: colors.warning || '#F59E0B' }]}>
+                            <Text style={styles.supersetBadgeSmallText}>SS</Text>
+                          </View>
+                        )}
+                        <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
+                          {exercise.name}
+                        </Text>
+                      </View>
+                      <Text style={[styles.exerciseSets, { color: colors.textSecondary }]}>
+                        {exercise.sets} sets
+                      </Text>
+                    </View>
+                  </View>
+                  {isLinkedToNext && index < 4 && (
+                    <View style={styles.supersetLinkIndicator}>
+                      <Text style={[styles.supersetLinkIcon, { color: colors.warning || '#F59E0B' }]}>⛓</Text>
+                    </View>
+                  )}
+                </React.Fragment>
+              );
+            })}
             {nextScheduled.day.exercises.length > 5 && (
               <Text style={[styles.moreExercises, { color: colors.textSecondary }]}>
                 +{nextScheduled.day.exercises.length - 5} more exercises
@@ -457,12 +466,7 @@ export default function HomeScreen({ navigation }) {
                 </Text>
               </TouchableOpacity>
             )}
-            {behindSchedule && (
-              <Text style={[styles.skipHint, { color: colors.textSecondary }]}>
-                Or skip ahead to a different day:
-              </Text>
-            )}
-            <ScrollView style={styles.modalList}>
+            <ScrollView style={styles.modalList} contentContainerStyle={styles.modalListContent}>
               {currentRoutine?.days?.map((day) => {
                 const isScheduled = nextScheduled?.day?.id === day.id;
                 return (
@@ -497,23 +501,23 @@ export default function HomeScreen({ navigation }) {
                   </TouchableOpacity>
                 );
               })}
+              <View style={styles.modalActionsInline}>
+                <TouchableOpacity
+                  style={[styles.modalActionButton, { backgroundColor: colors.card }]}
+                  onPress={handleQuickStart}
+                >
+                  <Text style={[styles.modalSecondaryText, { color: colors.primary }]}>
+                    Quick Start (Empty)
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalActionButton, { backgroundColor: colors.card }]}
+                  onPress={() => setShowDayPicker(false)}
+                >
+                  <Text style={[styles.modalCancelText, { color: colors.error }]}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
             </ScrollView>
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={[styles.modalActionButton, { backgroundColor: colors.card }]}
-                onPress={handleQuickStart}
-              >
-                <Text style={[styles.modalSecondaryText, { color: colors.primary }]}>
-                  Quick Start (Empty)
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalActionButton, { backgroundColor: colors.card }]}
-                onPress={() => setShowDayPicker(false)}
-              >
-                <Text style={[styles.modalCancelText, { color: colors.error }]}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
           </View>
         </View>
       </Modal>
@@ -575,15 +579,6 @@ const styles = StyleSheet.create({
   nextDayName: {
     fontSize: fontSize.md,
     fontWeight: '600',
-  },
-  behindBadge: {
-    marginTop: spacing.sm,
-    padding: spacing.sm,
-    borderRadius: borderRadius.md,
-  },
-  behindBadgeText: {
-    fontSize: fontSize.xs,
-    fontWeight: '500',
   },
   emptyRoutineText: {
     fontSize: fontSize.md,
@@ -670,7 +665,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   modalList: {
-    maxHeight: 300,
+    maxHeight: 400,
+  },
+  modalListContent: {
+    paddingBottom: spacing.md,
   },
   modalItem: {
     paddingVertical: spacing.md,
@@ -687,6 +685,10 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   modalActions: {
+    marginTop: spacing.md,
+    gap: spacing.sm,
+  },
+  modalActionsInline: {
     marginTop: spacing.md,
     gap: spacing.sm,
   },
@@ -713,11 +715,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: fontSize.md,
     fontWeight: '600',
-  },
-  skipHint: {
-    fontSize: fontSize.sm,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
   },
   dayItemContent: {
     flexDirection: 'row',
@@ -771,16 +768,6 @@ const styles = StyleSheet.create({
   gymPromptLaterText: {
     fontSize: fontSize.sm,
   },
-  clearRoutineButton: {
-    marginTop: spacing.sm,
-    paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(128,128,128,0.2)',
-  },
-  clearRoutineText: {
-    fontSize: fontSize.sm,
-    textAlign: 'center',
-  },
   gymQuickAccess: {
     padding: spacing.md,
     borderRadius: borderRadius.lg,
@@ -809,11 +796,25 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     marginBottom: spacing.md,
   },
+  previewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
   previewTitle: {
     fontSize: fontSize.xs,
     fontWeight: '600',
     letterSpacing: 0.5,
-    marginBottom: spacing.sm,
+  },
+  editDayButton: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+  },
+  editDayButtonText: {
+    fontSize: fontSize.xs,
+    fontWeight: '600',
   },
   exerciseList: {
     gap: spacing.sm,
@@ -854,5 +855,28 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     marginTop: spacing.xs,
+  },
+  exerciseNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    flex: 1,
+  },
+  supersetBadgeSmall: {
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+    borderRadius: 3,
+  },
+  supersetBadgeSmallText: {
+    color: '#FFFFFF',
+    fontSize: 8,
+    fontWeight: '700',
+  },
+  supersetLinkIndicator: {
+    alignItems: 'center',
+    marginVertical: -spacing.xs,
+  },
+  supersetLinkIcon: {
+    fontSize: fontSize.xs,
   },
 });

@@ -673,40 +673,40 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
         >
           <Text style={[styles.addSetButtonText, { color: colors.primary }]}>+ Add Set</Text>
         </TouchableOpacity>
-      </ScrollView>
 
-      <View style={styles.navigation}>
+        <View style={styles.navigation}>
+          <TouchableOpacity
+            style={[styles.navButtonSmall, { backgroundColor: colors.card, opacity: currentExerciseIndex === 0 ? 0.5 : 1 }, shadows.sm]}
+            onPress={goPrevious}
+            disabled={currentExerciseIndex === 0}
+          >
+            <Text style={[styles.navButtonTextSmall, { color: colors.text }]}>Previous</Text>
+          </TouchableOpacity>
+
+          {currentExerciseIndex === workoutData.length - 1 ? (
+            <TouchableOpacity
+              style={[styles.navButtonSmall, { backgroundColor: colors.primary }, shadows.md]}
+              onPress={finishWorkout}
+            >
+              <Text style={[styles.navButtonTextSmall, { color: '#FFFFFF' }]}>Finish</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={[styles.navButtonSmall, { backgroundColor: colors.primary }, shadows.md]}
+              onPress={goNext}
+            >
+              <Text style={[styles.navButtonTextSmall, { color: '#FFFFFF' }]}>Next</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
         <TouchableOpacity
-          style={[styles.navButton, { backgroundColor: colors.card, opacity: currentExerciseIndex === 0 ? 0.5 : 1 }, shadows.sm]}
-          onPress={goPrevious}
-          disabled={currentExerciseIndex === 0}
+          style={styles.cancelButton}
+          onPress={() => navigation.goBack()}
         >
-          <Text style={[styles.navButtonText, { color: colors.text }]}>Previous</Text>
+          <Text style={[styles.cancelText, { color: colors.error }]}>Cancel Workout</Text>
         </TouchableOpacity>
-
-        {currentExerciseIndex === workoutData.length - 1 ? (
-          <TouchableOpacity
-            style={[styles.navButton, { backgroundColor: colors.primary }, shadows.md]}
-            onPress={finishWorkout}
-          >
-            <Text style={[styles.navButtonText, { color: '#FFFFFF' }]}>Finish</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={[styles.navButton, { backgroundColor: colors.primary }, shadows.md]}
-            onPress={goNext}
-          >
-            <Text style={[styles.navButtonText, { color: '#FFFFFF' }]}>Next</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <TouchableOpacity
-        style={styles.cancelButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Text style={[styles.cancelText, { color: colors.error }]}>Cancel Workout</Text>
-      </TouchableOpacity>
+      </ScrollView>
 
       {/* Exercise Image Modal */}
       <Modal
@@ -1068,6 +1068,16 @@ const styles = StyleSheet.create({
   },
   navButtonText: {
     fontSize: fontSize.md,
+    fontWeight: '600',
+  },
+  navButtonSmall: {
+    flex: 1,
+    padding: spacing.sm,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+  },
+  navButtonTextSmall: {
+    fontSize: fontSize.sm,
     fontWeight: '600',
   },
   cancelButton: {
