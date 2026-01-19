@@ -47,8 +47,8 @@
 
 ### Version Tracking
 
-- **Current versionName**: 1.0.3
-- **Current versionCode**: 5
+- **Current versionName**: 1.0.4
+- **Current versionCode**: 6
 - **IMPORTANT**: Always increment `versionCode` before each Play Store release
 
 ### Version History
@@ -57,11 +57,12 @@
 |-------------|-------------|------------|
 | 1.0.0       | 1           | Initial    |
 | 1.0.2       | 2           | Previous   |
-| 1.0.3       | 3           | 2024-12-21 |
+| 1.0.3       | 5           | 2024-12-21 |
+| 1.0.4       | 6           | 2025-01-19 |
 
 ## Build Preferences
 
-1. **AAB Naming**: Include version code in filename (e.g., `cleanreps-1.0.3-vc3.aab`)
+1. **AAB Naming**: Include version code in filename (e.g., `cleanreps-1.0.4-vc6.aab`)
 2. **versionCode Location**: `android/app/build.gradle` line ~95
 3. **versionName Location**: `app.json` → `expo.version`
 

@@ -14,7 +14,17 @@ export default function SettingsScreen({ navigation }) {
   const shadows = isDark ? shadowsDark : shadowsLight;
   const { gymProfiles, activeProfileId, setActiveProfile } = useGymProfile();
   const { routines, workoutHistory, personalBests } = useWorkout();
-  const { units, toggleUnits } = useSettings();
+  const {
+    units,
+    toggleUnits,
+    filterByGymEquipment,
+    toggleFilterByGymEquipment,
+    targetRepMax,
+    updateTargetRepMax,
+    weightIncrement,
+    updateWeightIncrement,
+    displayWeight,
+  } = useSettings();
   const [isExporting, setIsExporting] = useState(false);
 
   const exportData = async () => {
@@ -182,6 +192,94 @@ export default function SettingsScreen({ navigation }) {
 
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+          EXERCISE FILTERING
+        </Text>
+        <TouchableOpacity
+          style={[styles.settingRow, { backgroundColor: colors.card }, shadows.sm]}
+          onPress={toggleFilterByGymEquipment}
+        >
+          <View style={styles.settingTextContainer}>
+            <Text style={[styles.settingLabel, { color: colors.text }]}>
+              Filter by Gym Equipment
+            </Text>
+            <Text style={[styles.settingDescription, { color: colors.textSecondary }]}>
+              Only show exercises available at your selected gym
+            </Text>
+          </View>
+          <View style={[
+            styles.toggleIndicator,
+            { backgroundColor: filterByGymEquipment ? colors.primary : colors.border }
+          ]}>
+            <Text style={styles.toggleText}>{filterByGymEquipment ? 'ON' : 'OFF'}</Text>
+          </View>
+        </TouchableOpacity>
+        {filterByGymEquipment && !activeProfileId && (
+          <Text style={[styles.warningText, { color: colors.warning || '#F59E0B' }]}>
+            No gym selected. Select a gym above to filter exercises.
+          </Text>
+        )}
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+          PROGRESSION
+        </Text>
+        <View style={[styles.settingRow, { backgroundColor: colors.card }, shadows.sm]}>
+          <View style={styles.settingTextContainer}>
+            <Text style={[styles.settingLabel, { color: colors.text }]}>
+              Target Rep Max
+            </Text>
+            <Text style={[styles.settingDescription, { color: colors.textSecondary }]}>
+              Suggest weight increase when you hit this many reps
+            </Text>
+          </View>
+          <View style={styles.stepperContainer}>
+            <TouchableOpacity
+              style={[styles.stepperButton, { backgroundColor: colors.background }]}
+              onPress={() => updateTargetRepMax(Math.max(6, targetRepMax - 1))}
+            >
+              <Text style={[styles.stepperButtonText, { color: colors.text }]}>-</Text>
+            </TouchableOpacity>
+            <Text style={[styles.stepperValue, { color: colors.primary }]}>{targetRepMax}</Text>
+            <TouchableOpacity
+              style={[styles.stepperButton, { backgroundColor: colors.background }]}
+              onPress={() => updateTargetRepMax(Math.min(20, targetRepMax + 1))}
+            >
+              <Text style={[styles.stepperButtonText, { color: colors.text }]}>+</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={[styles.settingRow, { backgroundColor: colors.card }, shadows.sm]}>
+          <View style={styles.settingTextContainer}>
+            <Text style={[styles.settingLabel, { color: colors.text }]}>
+              Weight Increment
+            </Text>
+            <Text style={[styles.settingDescription, { color: colors.textSecondary }]}>
+              Suggested increase when ready to progress
+            </Text>
+          </View>
+          <View style={styles.stepperContainer}>
+            <TouchableOpacity
+              style={[styles.stepperButton, { backgroundColor: colors.background }]}
+              onPress={() => updateWeightIncrement(Math.max(0.5, weightIncrement - 0.5))}
+            >
+              <Text style={[styles.stepperButtonText, { color: colors.text }]}>-</Text>
+            </TouchableOpacity>
+            <Text style={[styles.stepperValue, { color: colors.primary }]}>
+              {displayWeight(weightIncrement)}{units}
+            </Text>
+            <TouchableOpacity
+              style={[styles.stepperButton, { backgroundColor: colors.background }]}
+              onPress={() => updateWeightIncrement(Math.min(10, weightIncrement + 0.5))}
+            >
+              <Text style={[styles.stepperButtonText, { color: colors.text }]}>+</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
           DATA
         </Text>
         <TouchableOpacity
@@ -328,5 +426,52 @@ const styles = StyleSheet.create({
   themeOptionText: {
     fontSize: fontSize.sm,
     fontWeight: '600',
+  },
+  settingTextContainer: {
+    flex: 1,
+    marginRight: spacing.md,
+  },
+  settingDescription: {
+    fontSize: fontSize.xs,
+    marginTop: 2,
+  },
+  toggleIndicator: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+    minWidth: 50,
+    alignItems: 'center',
+  },
+  toggleText: {
+    color: '#FFFFFF',
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+  },
+  warningText: {
+    fontSize: fontSize.xs,
+    marginTop: spacing.xs,
+    marginLeft: spacing.sm,
+  },
+  stepperContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  stepperButton: {
+    width: 32,
+    height: 32,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepperButtonText: {
+    fontSize: fontSize.lg,
+    fontWeight: '600',
+  },
+  stepperValue: {
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    minWidth: 50,
+    textAlign: 'center',
   },
 });

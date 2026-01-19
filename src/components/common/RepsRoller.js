@@ -16,6 +16,8 @@ export default function RepsRoller({
   min = 0,
   max = 100,
   step = 1,
+  onFocus,
+  onComplete,
 }) {
   const { colors } = useTheme();
   const [manualInput, setManualInput] = useState(false);
@@ -33,11 +35,15 @@ export default function RepsRoller({
     onChange(newValue.toString());
   };
 
-  const handleManualSubmit = () => {
+  const handleManualSubmit = (shouldAdvance = false) => {
     const parsed = parseInt(inputValue);
     if (!isNaN(parsed)) {
       const clamped = Math.max(min, Math.min(max, parsed));
       onChange(clamped.toString());
+      // Call onComplete when user explicitly submits (presses Done)
+      if (shouldAdvance && onComplete) {
+        onComplete();
+      }
     }
     setManualInput(false);
   };
@@ -55,8 +61,9 @@ export default function RepsRoller({
           onChangeText={setInputValue}
           keyboardType="numeric"
           autoFocus
-          onBlur={handleManualSubmit}
-          onSubmitEditing={handleManualSubmit}
+          onFocus={onFocus}
+          onBlur={() => handleManualSubmit(false)}
+          onSubmitEditing={() => handleManualSubmit(true)}
           selectTextOnFocus
         />
       </View>
@@ -145,7 +152,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   manualInput: {
-    width: 60,
+    width: 50,
     height: 36,
     borderRadius: borderRadius.md,
     borderWidth: 2,

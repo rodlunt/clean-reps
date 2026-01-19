@@ -73,6 +73,15 @@ const getRecentWorkouts = (history, days = 7) => {
   return history.filter(s => s.date >= cutoff).length;
 };
 
+/**
+ * Format a number with commas for thousands separator
+ * @param {number} num - The number to format
+ * @returns {string} - Formatted number string (e.g., "1,200")
+ */
+const formatNumber = (num) => {
+  return Math.round(num).toLocaleString();
+};
+
 export default function HomeScreen({ navigation }) {
   const { colors, isDark } = useTheme();
   const shadows = isDark ? shadowsDark : shadowsLight;
@@ -284,6 +293,39 @@ export default function HomeScreen({ navigation }) {
         </GradientCard>
       )}
 
+      {/* Exercise Preview for Next Workout */}
+      {nextScheduled && nextScheduled.day.exercises?.length > 0 && (
+        <View style={[styles.exercisePreview, { backgroundColor: colors.card }, shadows.sm]}>
+          <Text style={[styles.previewTitle, { color: colors.textSecondary }]}>
+            TODAY'S EXERCISES
+          </Text>
+          <View style={styles.exerciseList}>
+            {nextScheduled.day.exercises.slice(0, 5).map((exercise, index) => (
+              <View key={index} style={styles.exerciseItem}>
+                <View style={[styles.exerciseNumber, { backgroundColor: colors.primary + '20' }]}>
+                  <Text style={[styles.exerciseNumberText, { color: colors.primary }]}>
+                    {index + 1}
+                  </Text>
+                </View>
+                <View style={styles.exerciseInfo}>
+                  <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
+                    {exercise.name}
+                  </Text>
+                  <Text style={[styles.exerciseSets, { color: colors.textSecondary }]}>
+                    {exercise.sets} sets
+                  </Text>
+                </View>
+              </View>
+            ))}
+            {nextScheduled.day.exercises.length > 5 && (
+              <Text style={[styles.moreExercises, { color: colors.textSecondary }]}>
+                +{nextScheduled.day.exercises.length - 5} more exercises
+              </Text>
+            )}
+          </View>
+        </View>
+      )}
+
       {/* Start Button */}
       <View style={styles.buttonContainer}>
         <Button
@@ -308,7 +350,7 @@ export default function HomeScreen({ navigation }) {
         </GradientCard>
         <GradientCard style={styles.statCard} shadow="sm">
           <Text style={[styles.statValue, { color: colors.primary }]}>
-            {displayWeight(weeklyVolume) > 1000 ? `${(displayWeight(weeklyVolume) / 1000).toFixed(1)}k` : Math.round(displayWeight(weeklyVolume))}
+            {formatNumber(displayWeight(weeklyVolume))}
           </Text>
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
             {units} Volume
@@ -760,5 +802,57 @@ const styles = StyleSheet.create({
   },
   gymQuickHint: {
     fontSize: fontSize.sm,
+  },
+  // Exercise Preview Styles
+  exercisePreview: {
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.md,
+  },
+  previewTitle: {
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    marginBottom: spacing.sm,
+  },
+  exerciseList: {
+    gap: spacing.sm,
+  },
+  exerciseItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  exerciseNumber: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+  },
+  exerciseNumberText: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+  },
+  exerciseInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  exerciseName: {
+    fontSize: fontSize.md,
+    fontWeight: '500',
+    flex: 1,
+  },
+  exerciseSets: {
+    fontSize: fontSize.sm,
+    marginLeft: spacing.sm,
+  },
+  moreExercises: {
+    fontSize: fontSize.sm,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: spacing.xs,
   },
 });

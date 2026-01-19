@@ -22,6 +22,7 @@ export default function WeightRoller({
   min = 0,
   max = 500,
   step = 0.5,
+  onFocus,
 }) {
   const { colors } = useTheme();
   const { units } = useSettings();
@@ -116,6 +117,7 @@ export default function WeightRoller({
           onChangeText={setInputValue}
           keyboardType="numeric"
           autoFocus
+          onFocus={onFocus}
           onBlur={handleManualSubmit}
           onSubmitEditing={handleManualSubmit}
           selectTextOnFocus
@@ -202,7 +204,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   manualInput: {
-    width: 70,
+    width: 60,
     height: 36,
     borderRadius: borderRadius.md,
     borderWidth: 2,

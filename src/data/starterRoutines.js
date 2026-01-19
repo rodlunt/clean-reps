@@ -141,6 +141,10 @@ export const COMMON_EQUIPMENT = [
   { id: 'dumbbells', name: 'Dumbbells', category: 'free_weights' },
   { id: 'ez-bar', name: 'EZ Curl Bar', category: 'free_weights' },
   { id: 'kettlebell', name: 'Kettlebell', category: 'free_weights' },
+  { id: 'trap-bar', name: 'Trap Bar / Hex Bar', category: 'free_weights' },
+  { id: 'safety-squat-bar', name: 'Safety Squat Bar', category: 'free_weights' },
+  { id: 'landmine', name: 'Landmine Attachment', category: 'free_weights' },
+  { id: 'medicine-ball', name: 'Medicine Ball', category: 'free_weights' },
   // Benches
   { id: 'bench', name: 'Flat Bench', category: 'benches' },
   { id: 'incline-bench', name: 'Incline Bench', category: 'benches' },
@@ -164,7 +168,38 @@ export const COMMON_EQUIPMENT = [
   { id: 'hip-abductor-machine', name: 'Hip Abductor Machine', category: 'machines' },
   { id: 'hip-adductor-machine', name: 'Hip Adductor Machine', category: 'machines' },
   { id: 'assisted-pullup-machine', name: 'Assisted Pull-up Machine', category: 'machines' },
+  { id: 'seated-row-machine', name: 'Seated Row Machine', category: 'machines' },
+  { id: 'chest-supported-row', name: 'Chest-Supported Row', category: 'machines' },
+  // Cardio
+  { id: 'rowing-machine', name: 'Rowing Machine', category: 'cardio' },
+  { id: 'treadmill', name: 'Treadmill', category: 'cardio' },
+  { id: 'exercise-bike', name: 'Exercise Bike', category: 'cardio' },
+  { id: 'elliptical', name: 'Elliptical', category: 'cardio' },
+  { id: 'stair-climber', name: 'Stair Climber', category: 'cardio' },
+  // Accessories
+  { id: 'resistance-band-light', name: 'Resistance Band (Light)', category: 'accessories' },
+  { id: 'resistance-band-medium', name: 'Resistance Band (Medium)', category: 'accessories' },
+  { id: 'resistance-band-heavy', name: 'Resistance Band (Heavy)', category: 'accessories' },
+  { id: 'foam-roller', name: 'Foam Roller', category: 'accessories' },
+  { id: 'ab-wheel', name: 'Ab Wheel', category: 'accessories' },
+  { id: 'battle-ropes', name: 'Battle Ropes', category: 'accessories' },
+  { id: 'plyo-box', name: 'Plyo Box', category: 'accessories' },
   // Bodyweight
   { id: 'pull-up-bar', name: 'Pull-up Bar', category: 'bodyweight' },
   { id: 'dip-bars', name: 'Dip Bars', category: 'bodyweight' },
+];
+
+// Resistance band options for assisted exercises
+export const RESISTANCE_BANDS = [
+  { id: 'none', name: 'None', color: null },
+  { id: 'light', name: 'Light', color: '#4ADE80' },
+  { id: 'medium', name: 'Medium', color: '#FBBF24' },
+  { id: 'heavy', name: 'Heavy', color: '#EF4444' },
+];
+
+// Exercises that can use resistance bands for assistance
+export const BAND_ASSISTED_EXERCISES = [
+  'pull-up', 'chin-up', 'wide-grip-pull-up', 'neutral-grip-pull-up',
+  'dip', 'chest-dip', 'tricep-dip',
+  'muscle-up', 'ring-muscle-up',
 ];

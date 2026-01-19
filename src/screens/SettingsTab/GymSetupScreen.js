@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useGymProfile } from '../../context/GymProfileContext';
@@ -15,6 +15,7 @@ export default function GymSetupScreen({ navigation, route }) {
   const [selectedEquipment, setSelectedEquipment] = useState(
     editingProfile?.equipment || []
   );
+  const [searchQuery, setSearchQuery] = useState('');
 
   const toggleEquipment = (equipmentId) => {
     setSelectedEquipment(prev =>
@@ -79,21 +80,34 @@ export default function GymSetupScreen({ navigation, route }) {
     );
   };
 
-  const groupedEquipment = COMMON_EQUIPMENT.reduce((acc, item) => {
-    if (!acc[item.category]) {
-      acc[item.category] = [];
-    }
-    acc[item.category].push(item);
-    return acc;
-  }, {});
+  // Filter equipment by search query and group by category
+  const filteredAndGroupedEquipment = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
+    const filtered = query
+      ? COMMON_EQUIPMENT.filter(item => item.name.toLowerCase().includes(query))
+      : COMMON_EQUIPMENT;
+
+    return filtered.reduce((acc, item) => {
+      if (!acc[item.category]) {
+        acc[item.category] = [];
+      }
+      acc[item.category].push(item);
+      return acc;
+    }, {});
+  }, [searchQuery]);
 
   const categoryLabels = {
     free_weights: 'Free Weights',
     benches: 'Benches',
     racks: 'Racks',
     machines: 'Machines',
+    cardio: 'Cardio',
+    accessories: 'Accessories',
     bodyweight: 'Bodyweight',
   };
+
+  // Define category order
+  const categoryOrder = ['free_weights', 'benches', 'racks', 'machines', 'cardio', 'accessories', 'bodyweight'];
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -141,13 +155,25 @@ export default function GymSetupScreen({ navigation, route }) {
           </View>
         </View>
 
-        {Object.entries(groupedEquipment).map(([category, items]) => (
+        <TextInput
+          style={[styles.searchInput, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
+          placeholder="Search equipment..."
+          placeholderTextColor={colors.placeholder}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+
+        <Text style={[styles.selectedCount, { color: colors.textSecondary }]}>
+          {selectedEquipment.length} of {COMMON_EQUIPMENT.length} selected
+        </Text>
+
+        {categoryOrder.filter(cat => filteredAndGroupedEquipment[cat]).map(category => (
           <View key={category} style={styles.categorySection}>
             <Text style={[styles.categoryTitle, { color: colors.text }]}>
               {categoryLabels[category]}
             </Text>
             <View style={styles.equipmentGrid}>
-              {items.map(equipment => (
+              {filteredAndGroupedEquipment[category].map(equipment => (
                 <TouchableOpacity
                   key={equipment.id}
                   style={[
@@ -234,6 +260,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     fontSize: fontSize.md,
     marginBottom: spacing.lg,
+  },
+  searchInput: {
+    padding: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    fontSize: fontSize.sm,
+    marginBottom: spacing.sm,
+  },
+  selectedCount: {
+    fontSize: fontSize.xs,
+    marginBottom: spacing.md,
+    textAlign: 'center',
   },
   equipmentHeader: {
     flexDirection: 'row',

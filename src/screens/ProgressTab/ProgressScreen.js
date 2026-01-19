@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useWorkout } from '../../context/WorkoutContext';
+import { useExercises } from '../../context/ExerciseContext';
 import { useSettings } from '../../context/SettingsContext';
 import { spacing, fontSize, borderRadius } from '../../theme';
 import { shadowsLight, shadowsDark } from '../../theme/colors';
@@ -36,6 +37,7 @@ export default function ProgressScreen() {
   const { colors, isDark } = useTheme();
   const shadows = isDark ? shadowsDark : shadowsLight;
   const { workoutHistory, personalBests, routines } = useWorkout();
+  const { getExerciseById } = useExercises();
   const { units, displayWeight } = useSettings();
   const [activeTab, setActiveTab] = useState('history');
   const [selectedExercise, setSelectedExercise] = useState(null);
@@ -118,10 +120,14 @@ export default function ProgressScreen() {
     const chartWidth = Dimensions.get('window').width - spacing.lg * 2 - spacing.md * 2;
     const barWidth = Math.min(40, (chartWidth - 20) / exerciseHistory.length);
 
+    // Check if selected exercise uses dumbbells
+    const exerciseData = getExerciseById(selectedExercise.id);
+    const isDumbbell = exerciseData?.equipment?.includes('dumbbells') || false;
+
     return (
       <View style={[styles.chartContainer, { backgroundColor: colors.card }, shadows.sm]}>
         <Text style={[styles.chartTitle, { color: colors.text }]}>
-          Est. 1RM - {selectedExercise.name}
+          Est. 1RM - {selectedExercise.name}{isDumbbell ? ' (per arm)' : ''}
         </Text>
         <View style={styles.chartArea}>
           <View style={styles.yAxis}>
@@ -154,7 +160,7 @@ export default function ProgressScreen() {
         {personalBests[selectedExercise.id] && (
           <View style={[styles.pbBadge, { backgroundColor: colors.primary + '20' }]}>
             <Text style={[styles.pbText, { color: colors.primary }]}>
-              PR: {displayWeight(personalBests[selectedExercise.id].estimated1RM)}{units}
+              PR: {displayWeight(personalBests[selectedExercise.id].estimated1RM)}{units}{isDumbbell ? ' (per arm)' : ''}
             </Text>
           </View>
         )}

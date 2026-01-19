@@ -18,6 +18,15 @@ const formatDuration = (ms) => {
   return `${hours}h ${remainingMins}m`;
 };
 
+/**
+ * Format a number with commas for thousands separator
+ * @param {number} num - The number to format
+ * @returns {string} - Formatted number string (e.g., "1,200")
+ */
+const formatNumber = (num) => {
+  return Math.round(num).toLocaleString();
+};
+
 // Confetti particle component
 const ConfettiParticle = ({ delay, color }) => {
   const translateY = useRef(new Animated.Value(-50)).current;
@@ -177,7 +186,7 @@ export default function WorkoutSummaryScreen({ navigation, route }) {
           <View style={styles.statRow}>
             <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Total Volume</Text>
             <Text style={[styles.statValue, { color: colors.text }]}>
-              {displayWeight(totalVolume) > 1000 ? `${(displayWeight(totalVolume) / 1000).toFixed(1)}k` : Math.round(displayWeight(totalVolume))} {units}
+              {formatNumber(displayWeight(totalVolume))} {units}
             </Text>
           </View>
         </View>
