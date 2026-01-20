@@ -62,7 +62,8 @@
       "Bash(npx eslint:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Microsoft/jdk-17.0.17.10-hotspot\" ./gradlew:*)"
     ],
     "deny": [],
     "ask": []
