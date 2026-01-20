@@ -47,8 +47,8 @@
 
 ### Version Tracking
 
-- **Current versionName**: 1.0.4
-- **Current versionCode**: 6
+- **Current versionName**: 1.0.5
+- **Current versionCode**: 7
 - **IMPORTANT**: Always increment `versionCode` before each Play Store release
 
 ### Version History
@@ -59,10 +59,11 @@
 | 1.0.2       | 2           | Previous   |
 | 1.0.3       | 5           | 2024-12-21 |
 | 1.0.4       | 6           | 2025-01-19 |
+| 1.0.5       | 7           | 2025-01-20 |
 
 ## Build Preferences
 
-1. **AAB Naming**: Include version code in filename (e.g., `cleanreps-1.0.4-vc6.aab`)
+1. **AAB Naming**: Include version code in filename (e.g., `cleanreps-1.0.5-vc7.aab`)
 2. **versionCode Location**: `android/app/build.gradle` line ~95
 3. **versionName Location**: `app.json` → `expo.version`
 
@@ -88,10 +89,21 @@
 - **Password**: `Cr3ps_Gym_2025_SecureKey`
 - **SHA1**: `B3:B0:A0:59:20:6A:79:F7:92:CB:3A:E7:9A:A4:84:2E:1B:0D:67:9E`
 
-**IMPORTANT**: After `npx expo prebuild --clean`, you must:
+**IMPORTANT**: After `npx expo prebuild --clean`, restore backups and signing config.
 
-1. Copy `release.keystore` back to `android/app/`
-2. Add release signing config to `android/app/build.gradle`
+## Build Backups
+
+Backups stored in `.build-backup/` (gitignored):
+
+- `.build-backup/release.keystore` - signing key
+- `.build-backup/local.properties` - SDK path
+
+Restore after prebuild --clean:
+
+```bash
+cp d:/GymApp/.build-backup/release.keystore d:/GymApp/android/app/
+cp d:/GymApp/.build-backup/local.properties d:/GymApp/android/
+```
 
 ## SDK Info
 
