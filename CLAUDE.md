@@ -47,19 +47,29 @@
 
 ### Version Tracking
 
-- **Current versionName**: 1.0.5
-- **Current versionCode**: 7
-- **IMPORTANT**: Always increment `versionCode` before each Play Store release
+- **Current versionName**: 1.0.6
+- **Current versionCode**: 8
+
+### CRITICAL: Version Increment Reminder
+
+**BEFORE building any AAB for Play Store upload, ALWAYS:**
+
+1. Increment `versionCode` in `android/app/build.gradle`
+2. Update `version` in `app.json`
+3. Update this file's version tracking section
+
+Play Store rejects uploads with duplicate versionCodes.
 
 ### Version History
 
-| versionName | versionCode | Date       |
-|-------------|-------------|------------|
-| 1.0.0       | 1           | Initial    |
-| 1.0.2       | 2           | Previous   |
-| 1.0.3       | 5           | 2024-12-21 |
-| 1.0.4       | 6           | 2025-01-19 |
-| 1.0.5       | 7           | 2025-01-20 |
+| versionName | versionCode | Date       | Notes                    |
+|-------------|-------------|------------|--------------------------|
+| 1.0.0       | 1           | Initial    |                          |
+| 1.0.2       | 2           | Previous   |                          |
+| 1.0.3       | 5           | 2024-12-21 |                          |
+| 1.0.4       | 6           | 2025-01-19 |                          |
+| 1.0.5       | 7           | 2025-01-20 |                          |
+| 1.0.6       | 8           | 2025-01-21 | Drag-and-drop reordering |
 
 ## Build Preferences
 

@@ -286,16 +286,16 @@ export default function HomeScreen({ navigation }) {
           </View>
           <View style={styles.exerciseList}>
             {nextScheduled.day.exercises.slice(0, 5).map((exercise, index) => {
-              const isInSuperset = exercise.supersetGroup !== null;
+              const isInSuperset = exercise?.supersetGroup != null;
               const nextExercise = nextScheduled.day.exercises[index + 1];
-              const isLinkedToNext = nextExercise?.supersetGroup !== null &&
-                nextExercise.supersetGroup === exercise.supersetGroup;
+              const isLinkedToNext = nextExercise?.supersetGroup != null &&
+                nextExercise.supersetGroup === exercise?.supersetGroup;
 
               return (
                 <React.Fragment key={index}>
                   <View style={[
                     styles.exerciseItem,
-                    isInSuperset && { borderLeftWidth: 2, borderLeftColor: colors.warning || '#F59E0B', paddingLeft: spacing.xs }
+                    isInSuperset && { borderLeftWidth: 2, borderLeftColor: '#D97706', paddingLeft: spacing.xs }
                   ]}>
                     <View style={[styles.exerciseNumber, { backgroundColor: colors.primary + '20' }]}>
                       <Text style={[styles.exerciseNumberText, { color: colors.primary }]}>
@@ -303,16 +303,9 @@ export default function HomeScreen({ navigation }) {
                       </Text>
                     </View>
                     <View style={styles.exerciseInfo}>
-                      <View style={styles.exerciseNameRow}>
-                        {isInSuperset && (
-                          <View style={[styles.supersetBadgeSmall, { backgroundColor: colors.warning || '#F59E0B' }]}>
-                            <Text style={styles.supersetBadgeSmallText}>SS</Text>
-                          </View>
-                        )}
-                        <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
-                          {exercise.name}
-                        </Text>
-                      </View>
+                      <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
+                        {exercise.name}
+                      </Text>
                       <Text style={[styles.exerciseSets, { color: colors.textSecondary }]}>
                         {exercise.sets} sets
                       </Text>
@@ -320,7 +313,7 @@ export default function HomeScreen({ navigation }) {
                   </View>
                   {isLinkedToNext && index < 4 && (
                     <View style={styles.supersetLinkIndicator}>
-                      <Text style={[styles.supersetLinkIcon, { color: colors.warning || '#F59E0B' }]}>⛓</Text>
+                      <Text style={[styles.supersetLinkIcon, { color: colors.textSecondary }]}>🔗</Text>
                     </View>
                   )}
                 </React.Fragment>

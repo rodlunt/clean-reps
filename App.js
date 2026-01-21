@@ -31,14 +31,11 @@ export default function App() {
     const setupNavigationBar = async () => {
       if (Platform.OS === 'android' && !showSplash) {
         try {
-          // Enable sticky immersive mode - nav bar auto-hides, swipe to reveal temporarily
           await NavigationBar.setVisibilityAsync('hidden');
           await NavigationBar.setBehaviorAsync('overlay-swipe');
-          // Set navigation bar color to match app background
           await NavigationBar.setBackgroundColorAsync('#000000');
         } catch (error) {
           // Silently fail if navigation bar API not available
-          console.log('NavigationBar setup skipped');
         }
       }
     };

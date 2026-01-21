@@ -1,5 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal, FlatList, Switch, Alert } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useTheme } from '../../context/ThemeContext';
 import { useWorkout } from '../../context/WorkoutContext';
 import { useExercises } from '../../context/ExerciseContext';
@@ -48,6 +50,17 @@ export default function CreateRoutineScreen({ navigation, route }) {
   const [activeDayId, setActiveDayId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMuscle, setSelectedMuscle] = useState(null);
+
+  /**
+   * Handle drag end to reorder exercises
+   * @param {string} dayId - Day containing the exercises
+   * @param {Object} param1 - Drag end params with reordered data
+   */
+  const onDragEnd = useCallback((dayId, { data }) => {
+    setDays(prevDays => prevDays.map(d =>
+      d.id === dayId ? { ...d, exercises: data } : d
+    ));
+  }, []);
 
   // Get equipment from selected gym profile
   const selectedGym = gymProfiles.find(g => g.id === selectedGymId);
@@ -201,6 +214,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
     }));
   };
 
+
   /**
    * Unlink an exercise from its superset
    * @param {string} dayId - Day containing the exercise
@@ -314,7 +328,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <GestureHandlerRootView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={[styles.cancelText, { color: colors.error }]}>Cancel</Text>
@@ -391,85 +405,95 @@ export default function CreateRoutineScreen({ navigation, route }) {
               )}
             </View>
 
-            {day.exercises.map((exercise, exerciseIndex) => {
-              const isInSuperset = exercise.supersetGroup !== null;
-              const nextExercise = day.exercises[exerciseIndex + 1];
-              const canLinkNext = exerciseIndex < day.exercises.length - 1;
-              const isLinkedToNext = canLinkNext && nextExercise?.supersetGroup !== null &&
-                nextExercise.supersetGroup === exercise.supersetGroup;
+            <DraggableFlatList
+              data={day.exercises}
+              keyExtractor={(item) => item.id}
+              onDragEnd={(params) => onDragEnd(day.id, params)}
+              scrollEnabled={false}
+              renderItem={({ item: exercise, drag, isActive, getIndex }) => {
+                const exerciseIndex = getIndex();
+                const isInSuperset = exercise.supersetGroup !== null;
+                const nextExercise = day.exercises[exerciseIndex + 1];
+                const canLinkNext = exerciseIndex < day.exercises.length - 1;
+                const isLinkedToNext = canLinkNext && nextExercise?.supersetGroup !== null &&
+                  nextExercise.supersetGroup === exercise.supersetGroup;
 
-              return (
-                <React.Fragment key={exercise.id}>
-                  <View style={[
-                    styles.exerciseRow,
-                    { borderTopColor: colors.border },
-                    isInSuperset && { borderLeftWidth: 3, borderLeftColor: colors.warning || '#F59E0B' }
-                  ]}>
-                    <View style={styles.exerciseInfo}>
-                      <View style={styles.exerciseNameRow}>
+                return (
+                  <ScaleDecorator>
+                    <View>
+                      <TouchableOpacity
+                        onLongPress={drag}
+                        disabled={isActive}
+                        delayLongPress={150}
+                        style={[
+                          styles.exerciseCard,
+                          { backgroundColor: colors.background },
+                          shadows.sm,
+                          isInSuperset && styles.exerciseCardSuperset,
+                          isActive && styles.exerciseCardDragging
+                        ]}
+                      >
                         {isInSuperset && (
-                          <View style={[styles.supersetBadge, { backgroundColor: colors.warning || '#F59E0B' }]}>
-                            <Text style={styles.supersetBadgeText}>SS</Text>
-                          </View>
+                          <View style={styles.supersetHighlight} />
                         )}
-                        <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
-                          {exercise.name}
-                        </Text>
-                      </View>
-                      {exercise.isBodyweight && (
-                        <View style={styles.bodyweightToggle}>
-                          <Text style={[styles.bodyweightLabel, { color: colors.textSecondary }]}>
-                            {exercise.useBodyweight ? 'BW only' : '+Weight'}
-                          </Text>
-                          <Switch
-                            value={!exercise.useBodyweight}
-                            onValueChange={() => toggleBodyweight(day.id, exercise.id)}
-                            trackColor={{ false: colors.border, true: colors.primary + '60' }}
-                            thumbColor={exercise.useBodyweight ? colors.card : colors.primary}
-                            style={styles.switch}
-                          />
+                        <View style={styles.exerciseCardContent}>
+                          <View style={styles.dragHandle}>
+                            <Text style={[styles.dragHandleText, { color: colors.textSecondary }]}>☰</Text>
+                          </View>
+                          <View style={styles.exerciseInfo}>
+                            <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
+                              {exercise.name}
+                            </Text>
+                            {exercise.isBodyweight && (
+                              <View style={styles.bodyweightToggle}>
+                                <Text style={[styles.bodyweightLabel, { color: colors.textSecondary }]}>
+                                  {exercise.useBodyweight ? 'BW only' : '+Weight'}
+                                </Text>
+                                <Switch
+                                  value={!exercise.useBodyweight}
+                                  onValueChange={() => toggleBodyweight(day.id, exercise.id)}
+                                  trackColor={{ false: colors.border, true: colors.primary + '60' }}
+                                  thumbColor={exercise.useBodyweight ? colors.card : colors.primary}
+                                  style={styles.switch}
+                                />
+                              </View>
+                            )}
+                          </View>
+                          <View style={styles.setsContainer}>
+                            <TextInput
+                              style={[styles.setsInput, { backgroundColor: colors.card, color: colors.text }]}
+                              keyboardType="numeric"
+                              value={exercise.sets.toString()}
+                              onChangeText={(text) => updateExerciseSets(day.id, exercise.id, text)}
+                            />
+                            <Text style={[styles.setsLabel, { color: colors.textSecondary }]}>sets</Text>
+                          </View>
+                          <TouchableOpacity onPress={() => removeExercise(day.id, exercise.id)}>
+                            <Text style={[styles.removeExText, { color: colors.error }]}>X</Text>
+                          </TouchableOpacity>
                         </View>
+                      </TouchableOpacity>
+                      {canLinkNext && !isLinkedToNext && (
+                        <TouchableOpacity
+                          style={styles.linkSupersetButton}
+                          onPress={() => linkSuperset(day.id, exerciseIndex)}
+                        >
+                          <Text style={[styles.linkSupersetIcon, { color: colors.textSecondary }]}>🔗</Text>
+                        </TouchableOpacity>
+                      )}
+                      {isLinkedToNext && (
+                        <TouchableOpacity
+                          style={styles.supersetConnector}
+                          onPress={() => unlinkSuperset(day.id, exercise.id)}
+                        >
+                          <Text style={[styles.supersetConnectorText, { color: colors.textSecondary }]}>🔗</Text>
+                        </TouchableOpacity>
                       )}
                     </View>
-                    <View style={styles.setsContainer}>
-                      <TextInput
-                        style={[styles.setsInput, { backgroundColor: colors.background, color: colors.text }]}
-                        keyboardType="numeric"
-                        value={exercise.sets.toString()}
-                        onChangeText={(text) => updateExerciseSets(day.id, exercise.id, text)}
-                      />
-                      <Text style={[styles.setsLabel, { color: colors.textSecondary }]}>sets</Text>
-                    </View>
-                    {isInSuperset ? (
-                      <TouchableOpacity
-                        style={[styles.unlinkButton, { backgroundColor: (colors.warning || '#F59E0B') + '20' }]}
-                        onPress={() => unlinkSuperset(day.id, exercise.id)}
-                      >
-                        <Text style={[styles.unlinkButtonText, { color: colors.warning || '#F59E0B' }]}>⛓</Text>
-                      </TouchableOpacity>
-                    ) : null}
-                    <TouchableOpacity onPress={() => removeExercise(day.id, exercise.id)}>
-                      <Text style={[styles.removeExText, { color: colors.error }]}>X</Text>
-                    </TouchableOpacity>
-                  </View>
-                  {canLinkNext && !isLinkedToNext && (
-                    <TouchableOpacity
-                      style={[styles.linkSupersetButton, { borderColor: colors.border }]}
-                      onPress={() => linkSuperset(day.id, exerciseIndex)}
-                    >
-                      <Text style={[styles.linkSupersetText, { color: colors.textSecondary }]}>
-                        ⛓ Link as superset
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                  {isLinkedToNext && (
-                    <View style={[styles.supersetConnector, { backgroundColor: colors.warning || '#F59E0B' }]}>
-                      <Text style={styles.supersetConnectorText}>⛓</Text>
-                    </View>
-                  )}
-                </React.Fragment>
-              );
-            })}
+                  </ScaleDecorator>
+                );
+              }}
+            />
 
             <TouchableOpacity
               style={styles.addExerciseButton}
@@ -572,7 +596,7 @@ export default function CreateRoutineScreen({ navigation, route }) {
           />
         </View>
       </Modal>
-    </View>
+    </GestureHandlerRootView>
   );
 }
 
@@ -645,17 +669,52 @@ const styles = StyleSheet.create({
   removeText: {
     fontSize: fontSize.sm,
   },
-  exerciseRow: {
+  exerciseCard: {
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.sm,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  exerciseCardSuperset: {
+    // Container for superset highlight
+  },
+  exerciseCardDragging: {
+    opacity: 0.9,
+    transform: [{ scale: 1.02 }],
+    zIndex: 999,
+  },
+  supersetHighlight: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    backgroundColor: '#D97706',
+    borderTopLeftRadius: borderRadius.md,
+    borderBottomLeftRadius: borderRadius.md,
+  },
+  exerciseCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.sm,
-    borderTopWidth: 1,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingLeft: spacing.sm,
+  },
+  dragHandle: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    marginRight: spacing.xs,
+  },
+  dragHandleText: {
+    fontSize: fontSize.lg,
   },
   exerciseInfo: {
     flex: 1,
   },
   exerciseName: {
     fontSize: fontSize.md,
+    fontWeight: '500',
   },
   bodyweightToggle: {
     flexDirection: 'row',
@@ -826,14 +885,13 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
   },
   linkSupersetButton: {
+    alignSelf: 'center',
     paddingVertical: spacing.xs,
-    marginLeft: spacing.lg,
-    borderLeftWidth: 1,
-    borderStyle: 'dashed',
-    paddingLeft: spacing.sm,
+    paddingHorizontal: spacing.md,
   },
-  linkSupersetText: {
-    fontSize: fontSize.xs,
+  linkSupersetIcon: {
+    fontSize: fontSize.lg,
+    opacity: 0.4,
   },
   supersetConnector: {
     width: 24,

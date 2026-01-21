@@ -505,25 +505,28 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
             Exercise {currentExerciseIndex + 1} of {workoutData.length} ▼
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setShowImageModal(true)}>
-          <View style={styles.exerciseNameContainer}>
-            {currentExercise.supersetGroup !== null && (
-              <View style={[styles.supersetIndicator, { backgroundColor: colors.warning || '#F59E0B' }]}>
-                <Text style={styles.supersetIndicatorText}>SUPERSET</Text>
-              </View>
-            )}
+        <View style={styles.exerciseHeaderRow}>
+          <TouchableOpacity style={styles.exerciseNameTouchable} onPress={() => setShowImageModal(true)}>
             <Text style={[styles.exerciseName, { color: colors.text }]}>
               {currentExercise.name}
             </Text>
-          </View>
-          <Text style={[styles.tapToView, { color: colors.textSecondary }]}>
-            Tap to view exercise
-          </Text>
-        </TouchableOpacity>
+            <Text style={[styles.tapToView, { color: colors.textSecondary }]}>
+              Tap to view exercise
+            </Text>
+          </TouchableOpacity>
+          {currentExercise.supersetGroup !== null && (
+            <TouchableOpacity
+              style={[styles.supersetUnlinkButton, { borderColor: colors.border }]}
+              onPress={() => unlinkSuperset(currentExerciseIndex)}
+            >
+              <Text style={[styles.supersetUnlinkIcon, { color: colors.textSecondary }]}>🔗</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         {/* Show superset partner exercises */}
         {currentExercise.supersetGroup !== null && (
-          <View style={[styles.supersetPartners, { backgroundColor: (colors.warning || '#F59E0B') + '15' }]}>
-            <Text style={[styles.supersetPartnersLabel, { color: colors.warning || '#F59E0B' }]}>
+          <View style={[styles.supersetPartners, { backgroundColor: ('#D97706') + '15' }]}>
+            <Text style={[styles.supersetPartnersLabel, { color: '#D97706' }]}>
               Superset with:
             </Text>
             <Text style={[styles.supersetPartnersText, { color: colors.textSecondary }]}>
@@ -813,23 +816,16 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
                         styles.sessionExerciseRow,
                         { backgroundColor: isCurrentExercise ? colors.primary + '20' : colors.background },
                         isCurrentExercise && { borderColor: colors.primary, borderWidth: 1 },
-                        isInSuperset && !isCurrentExercise && { borderLeftWidth: 3, borderLeftColor: colors.warning || '#F59E0B' }
+                        isInSuperset && !isCurrentExercise && { borderLeftWidth: 3, borderLeftColor: '#D97706' }
                       ]}
                     >
                       <TouchableOpacity
                         style={styles.sessionExerciseInfo}
                         onPress={() => jumpToExercise(index)}
                       >
-                        <View style={styles.exerciseNameRow}>
-                          {isInSuperset && (
-                            <Text style={[styles.supersetBadge, { backgroundColor: colors.warning || '#F59E0B' }]}>
-                              SS
-                            </Text>
-                          )}
-                          <Text style={[styles.sessionExerciseName, { color: colors.text }]}>
-                            {exercise.name}
-                          </Text>
-                        </View>
+                        <Text style={[styles.sessionExerciseName, { color: colors.text }]}>
+                          {exercise.name}
+                        </Text>
                         <Text style={[styles.sessionExerciseSets, { color: colors.textSecondary }]}>
                           {completedSets}/{exercise.sets.length} sets
                         </Text>
@@ -852,10 +848,10 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
                         </TouchableOpacity>
                         {isInSuperset ? (
                           <TouchableOpacity
-                            style={[styles.actionButton, { backgroundColor: (colors.warning || '#F59E0B') + '20' }]}
+                            style={[styles.actionButton, { backgroundColor: ('#D97706') + '20' }]}
                             onPress={() => unlinkSuperset(index)}
                           >
-                            <Text style={[styles.actionButtonText, { color: colors.warning || '#F59E0B' }]}>Unlink</Text>
+                            <Text style={[styles.actionButtonText, { color: '#D97706' }]}>Unlink</Text>
                           </TouchableOpacity>
                         ) : (
                           <TouchableOpacity
@@ -881,16 +877,17 @@ export default function ActiveWorkoutScreen({ navigation, route }) {
                         style={[styles.linkSupersetButton, { borderColor: colors.border }]}
                         onPress={() => linkSuperset(index)}
                       >
-                        <Text style={[styles.linkSupersetText, { color: colors.textSecondary }]}>
-                          ⛓ Link as superset
-                        </Text>
+                        <Text style={[styles.linkSupersetText, { color: colors.textSecondary }]}>🔗</Text>
                       </TouchableOpacity>
                     )}
                     {/* Visual connector for linked supersets */}
                     {isLinkedToNext && (
-                      <View style={[styles.supersetConnector, { backgroundColor: colors.warning || '#F59E0B' }]}>
-                        <Text style={styles.supersetConnectorText}>⛓</Text>
-                      </View>
+                      <TouchableOpacity
+                        style={styles.supersetConnector}
+                        onPress={() => unlinkSuperset(index)}
+                      >
+                        <Text style={[styles.supersetConnectorText, { color: colors.textSecondary }]}>🔗</Text>
+                      </TouchableOpacity>
                     )}
                   </React.Fragment>
                 );
@@ -1346,5 +1343,22 @@ const styles = StyleSheet.create({
   },
   supersetPartnersText: {
     fontSize: fontSize.xs,
+  },
+  exerciseHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  exerciseNameTouchable: {
+    flex: 1,
+  },
+  supersetUnlinkButton: {
+    padding: spacing.sm,
+    borderRadius: borderRadius.md,
+    marginLeft: spacing.sm,
+    borderWidth: 1,
+  },
+  supersetUnlinkIcon: {
+    fontSize: fontSize.lg,
   },
 });
