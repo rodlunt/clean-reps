@@ -1,0 +1,57 @@
+name: Bug report
+description: Something in Clean Reps is broken or behaving unexpectedly
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: A clear description of the bug, including what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Number the steps so they can be followed exactly.
+      placeholder: |
+        1. Open the app
+        2. Start a workout from routine X
+        3. Log a set with weight Y
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: >
+        Two or three testable statements that must all be true for this bug to count as
+        fixed. "Finished typing" is not done; the criteria passing is done.
+      placeholder: |
+        - Logging a set with weight 0 no longer crashes the app
+        - The previous set's weight still displays correctly after the fix
+        - Existing workout history is unaffected
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and OS version
+      placeholder: e.g. Pixel 7, Android 15
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: Found in the app's Settings screen, or the versionName in a sideloaded APK/AAB filename.
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Screenshots, logs, or context that might help track this down.
+    validations:
+      required: false

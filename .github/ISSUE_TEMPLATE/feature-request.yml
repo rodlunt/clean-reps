@@ -1,0 +1,38 @@
+name: Feature request
+description: Suggest an addition or change to Clean Reps
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve
+      description: What are you trying to do that the app doesn't support today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What you'd like to see, in enough detail that someone else could build it.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: >
+        Two or three testable statements that must all be true for this to count as done.
+        "Finished typing" is not done; the criteria passing is done.
+      placeholder: |
+        - A user can set a rest timer per exercise from the routine editor
+        - The timer persists across app restarts
+        - Existing routines without a timer set keep their current behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workarounds you're using now, or other approaches you weighed up.
+    validations:
+      required: false
