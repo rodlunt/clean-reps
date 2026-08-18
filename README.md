@@ -146,3 +146,7 @@ MIT
 ## Acknowledgments
 
 Exercise data from [wger Workout Manager](https://wger.de/)
+
+---
+
+<sub>Built by [Rodney Lunt](https://rod.lunt.au). If this saved you some time, you can [buy me a coffee](https://buymeacoffee.com/rodlunt).</sub>
