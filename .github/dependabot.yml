@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # Keeps action version pins current without hand-checking tags for new releases.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # pnpm-managed dependencies (pnpm-lock.yaml lives at repo root). Dependabot's
+  # ecosystem value is "npm" even for a pnpm project; it reads the lockfile format,
+  # not the CLI name. Minor and patch bumps are grouped into one weekly PR so they
+  # don't flood review; majors stay ungrouped so a breaking change gets its own look.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"

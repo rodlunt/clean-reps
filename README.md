@@ -141,7 +141,7 @@ All data stays on your device. No accounts, no servers, no analytics. See `store
 
 ## License
 
-MIT
+[MIT](LICENSE)
 
 ## Acknowledgments
 
