@@ -94,10 +94,7 @@ Play Store rejects uploads with duplicate versionCodes.
 
 ## Keystore Configuration
 
-- **File**: `android/app/release.keystore`
-- **Alias**: `cleanreps`
-- **Password**: `Cr3ps_Gym_2025_SecureKey`
-- **SHA1**: `B3:B0:A0:59:20:6A:79:F7:92:CB:3A:E7:9A:A4:84:2E:1B:0D:67:9E`
+- **File**: `android/app/release.keystore` (gitignored; credentials are kept outside the repo)
 
 **IMPORTANT**: After `npx expo prebuild --clean`, restore backups and signing config.
 
